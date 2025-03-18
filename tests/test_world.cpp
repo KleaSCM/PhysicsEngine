@@ -19,3 +19,10 @@ void testWorldUpdate() {
     RigidBody body3;
     body3.SetMass(0.0f); // Static
     body3.position = Vector3(0, 100, 0);
+    // Add bodies to world
+    world.AddBody(&body1);
+    world.AddBody(&body2);
+    world.AddBody(&body3);
+
+    // Step world (applies gravity for 1 second)
+    world.Step();
