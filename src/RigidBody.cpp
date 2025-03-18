@@ -62,13 +62,18 @@ void RigidBody::ApplyTorque(const Vector3& torque) {
 void RigidBody::Integrate(float dt) {
     if (invMass == 0.0f) return;  // Static objects do not move
 
-    // Linear motion: v = v + (F/m) * dt
-    acceleration = forceAccum * invMass;
-    velocity += acceleration * dt;
-    position += velocity * dt;
+    // Compute linear acceleration: a = F/m
+    Vector3 acceleration = forceAccum * invMass;
 
-    // Rotational motion: ω = ω + (I⁻¹ * τ) * dt
+    position += velocity * dt + acceleration * (0.5f * dt * dt); 
+
+    // Update velocity: v = v0 + a * dt
+    velocity += acceleration * dt;
+
+    // Compute angular acceleration: α = I⁻¹ * τ
     Vector3 angularAcceleration = invInertiaTensor * torqueAccum;
+
+    // Update angular velocity: ω = ω0 + α * dt
     angularVelocity += angularAcceleration * dt;
 
     // Update rotation using quaternion integration
@@ -76,9 +81,11 @@ void RigidBody::Integrate(float dt) {
     rotation += deltaRotation;
     rotation.Normalize();  // Ensure quaternion remains unit-length
 
-    // Reset forces after integration
+    // Reset forces and torques after integration
     ClearForces();
 }
+
+
 
 /**
  * @brief Clears accumulated forces and torques.
