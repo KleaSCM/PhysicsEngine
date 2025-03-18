@@ -25,11 +25,12 @@ void RigidBody::SetMass(float mass) {
     } else {
         invMass = 1.0f / mass;
 
-        // Correct moment of inertia for a unit cube (assuming unit dimensions)
-        float inertiaValue = (1.0f / 6.0f) * mass;  // Adjusted coefficient
+        //moment of inertia for a cube (assuming unit dimensions)
+        float inertiaValue = (1.0f / 12.0f) * mass;  // Fix coefficient to 1/12
         invInertiaTensor = Matrix3(1.0f / (inertiaValue + 1e-6f));  // Avoid division by zero
     }
 }
+
 
 
 /**
