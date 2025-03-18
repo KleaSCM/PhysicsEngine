@@ -58,10 +58,11 @@ void testTorque() {
 
     body.Integrate(1.0f);  // Simulate 1 second
 
-    assertApprox(body.angularVelocity.z, 5.0f); // ω = τ * dt (assuming unit inertia)
+    assertApprox(body.angularVelocity.z, 5.0f); // ω = τ * dt 
 
     std::cout << "✅ testTorque passed!" << std::endl;
 }
+
 
 /**
  * @brief Tests that forces accumulate correctly and reset after integration.

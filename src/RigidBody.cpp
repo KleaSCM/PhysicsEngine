@@ -31,8 +31,6 @@ void RigidBody::SetMass(float mass) {
     }
 }
 
-
-
 /**
  * @brief Applies a force to the center of mass.
  * @param force Force vector (N).
