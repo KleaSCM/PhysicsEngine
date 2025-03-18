@@ -42,3 +42,22 @@ void testWorldUpdate() {
     // body3: static => no movement
     // final velocity.y = 0
     // final position.y = 100 (unchanged)
+    float epsilon = 1e-3f;
+    assert(std::abs(body1.position.y - 5.1f) < epsilon);
+    assert(std::abs(body1.velocity.y + 9.8f) < epsilon); // velocity ~ -9.8
+
+    assert(std::abs(body2.position.y - 15.1f) < epsilon);
+    assert(std::abs(body2.velocity.y + 9.8f) < epsilon); // velocity ~ -9.8
+
+    // static body unaffected
+    assert(body3.position.y == 100);
+    assert(body3.velocity.y == 0);
+
+    std::cout << "✅ testWorldUpdate passed!\n";
+}
+
+int main() {
+    testWorldUpdate();
+    std::cout << "✅ All World tests passed!\n";
+    return 0;
+}
