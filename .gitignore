@@ -1,0 +1,37 @@
+# Ignore build artifacts and compiled binaries
+/build/
+*.o
+*.obj
+*.exe
+*.out
+*.dll
+*.so
+*.dylib
+
+# Ignore CMake-generated files
+/CMakeLists.txt.user
+/CMakeCache.txt
+/CMakeFiles/
+Makefile
+cmake_install.cmake
+
+# Ignore editor/IDE-specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Ignore test executable files
+/tests/*.exe
+/tests/*.out
+/tests/*.obj
+/tests/*.o
+
+# Ignore WebAssembly generated files
+/web/physics.wasm
+/web/physics.js
+
+# Ignore logs and temp files
+*.log
+*.tmp
+*.bak
