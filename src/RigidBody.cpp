@@ -18,15 +18,19 @@ RigidBody::RigidBody()
  * @brief Sets the object's mass and precomputes its inverse.
  * @param m Mass (kg). If zero, the object is static (non-movable).
  */
-void RigidBody::SetMass(float m) {
-    if (m <= 0.0f) {
-        mass = 0.0f;
-        invMass = 0.0f;  // Static objects do not move
+void RigidBody::SetMass(float mass) {
+    if (mass <= 0.0f) {
+        invMass = 0.0f;
+        invInertiaTensor = Matrix3();  // Set inertia to zero for static objects
     } else {
-        mass = m;
-        invMass = 1.0f / m;
+        invMass = 1.0f / mass;
+
+        // Approximate moment of inertia for a unit cube
+        float inertiaValue = (1.0f / 6.0f) * mass;  
+        invInertiaTensor = Matrix3(1.0f / inertiaValue);
     }
 }
+
 
 /**
  * @brief Applies a force to the center of mass.
