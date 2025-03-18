@@ -1,7 +1,7 @@
-
 #pragma once
 
 #include <cmath>  
+#include <algorithm> 
 
 /**
  * @class Vector3
@@ -12,6 +12,12 @@ struct Vector3 {
 
     Vector3() : x(0), y(0), z(0) {}
     Vector3(float x, float y, float z) : x(x), y(y), z(z) {}
+
+    // Operator Overloads for +=, -=, *=, etc.
+    Vector3& operator+=(const Vector3& v) { x += v.x; y += v.y; z += v.z; return *this; }
+    Vector3& operator-=(const Vector3& v) { x -= v.x; y -= v.y; z -= v.z; return *this; }
+    Vector3& operator*=(float s) { x *= s; y *= s; z *= s; return *this; }
+    Vector3& operator/=(float s) { x /= s; y /= s; z /= s; return *this; }
 
     Vector3 operator+(const Vector3& v) const { return {x + v.x, y + v.y, z + v.z}; }
     Vector3 operator-(const Vector3& v) const { return {x - v.x, y - v.y, z - v.z}; }
@@ -34,15 +40,46 @@ struct Quaternion {
     Quaternion() : w(1), x(0), y(0), z(0) {}
     Quaternion(float w, float x, float y, float z) : w(w), x(x), y(y), z(z) {}
 
+    // Fix: Add constructor that accepts a Vector3 and float
+    Quaternion(const Vector3& v, float scalar) : w(scalar), x(v.x), y(v.y), z(v.z) {}
+
     static Quaternion Identity() { return {1, 0, 0, 0}; }
+
     Quaternion operator*(const Quaternion& q) const {
         return {w * q.w - x * q.x - y * q.y - z * q.z,
                 w * q.x + x * q.w + y * q.z - z * q.y,
                 w * q.y - x * q.z + y * q.w + z * q.x,
                 w * q.z + x * q.y - y * q.x + z * q.w};
     }
+
+    Quaternion& operator+=(const Quaternion& q) {
+        w += q.w; x += q.x; y += q.y; z += q.z;
+        return *this;
+    }
+
     Quaternion Conjugate() const { return {w, -x, -y, -z}; }
+
+    // Fix: Add Quaternion normalization function
+    void Normalize() {
+        float length = std::sqrt(w * w + x * x + y * y + z * z);
+        if (length > 0.0f) {
+            float invLen = 1.0f / length;
+            w *= invLen; x *= invLen; y *= invLen; z *= invLen;
+        }
+    }
+
+    // Fix: Add Quaternion * float operator
+    Quaternion operator*(float scalar) const {
+        return {w * scalar, x * scalar, y * scalar, z * scalar};
+    }
+
+    // Fix: Add Quaternion *= float operator
+    Quaternion& operator*=(float scalar) {
+        w *= scalar; x *= scalar; y *= scalar; z *= scalar;
+        return *this;
+    }
 };
+
 
 /**
  * @class Matrix3
