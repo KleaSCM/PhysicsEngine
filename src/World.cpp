@@ -14,15 +14,16 @@ void PhysicsWorld::AddBody(RigidBody* body) {
  * Collision detection & resolution will be added here later.
  */
 void PhysicsWorld::Step() {
-    // Apply gravity to all dynamic bodies
-    Vector3 gravity(0.0f, -9.8f, 0.0f);
-    ApplyGlobalForce(gravity);
+    // 1) Apply gravity once
+    Vector3 gravity(0, -9.8f, 0);
+    ApplyGlobalForce(gravity);  // force = mass*g
 
-    // Integrate each body for this timestep
-    for (RigidBody* body : bodies) {
-        body->Integrate(fixedDeltaTime);
+    // 2) Integrate each body once
+    for (auto* body : bodies) {
+        body->Integrate(fixedDeltaTime); // dt=1.0f
     }
 }
+
 
 /**
  * @brief Applies a uniform force to all dynamic (non-static) bodies.
