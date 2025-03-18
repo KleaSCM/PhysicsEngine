@@ -18,18 +18,31 @@ RigidBody::RigidBody()
  * @brief Sets the object's mass and precomputes its inverse.
  * @param m Mass (kg). If zero, the object is static (non-movable).
  */
-void RigidBody::SetMass(float mass) {
+
+ void RigidBody::SetMass(float mass) {
     if (mass <= 0.0f) {
         invMass = 0.0f;
-        invInertiaTensor = Matrix3();  // Set inertia to zero for static objects
+        invInertiaTensor = Matrix3(); // zero for static
     } else {
         invMass = 1.0f / mass;
 
-        //moment of inertia for a cube (assuming unit dimensions)
-        float inertiaValue = (1.0f / 12.0f) * mass;  // Fix coefficient to 1/12
-        invInertiaTensor = Matrix3(1.0f / (inertiaValue + 1e-6f));  // Avoid division by zero
+        // Force unit inertia (I = 1, so invInertia = 1).
+        invInertiaTensor = Matrix3(1.0f);
     }
 }
+
+// void RigidBody::SetMass(float mass) {
+//     if (mass <= 0.0f) {
+//         invMass = 0.0f;
+//         invInertiaTensor = Matrix3();  // Set inertia to zero for static objects
+//     } else {
+//         invMass = 1.0f / mass;
+
+//         //moment of inertia for a cube (assuming unit dimensions)
+//         float inertiaValue = (1.0f / 12.0f) * mass;  // Fix coefficient to 1/12
+//         invInertiaTensor = Matrix3(1.0f / (inertiaValue + 1e-6f));  // Avoid division by zero
+//     }
+// }
 
 
 
