@@ -16,11 +16,10 @@ void PhysicsWorld::AddBody(RigidBody* body) {
 void PhysicsWorld::Step() {
     // 1) Apply gravity once
     Vector3 gravity(0, -9.8f, 0);
-    ApplyGlobalForce(gravity);  // force = mass*g
-
+    ApplyGlobalForce(gravity); 
     // 2) Integrate each body once
     for (auto* body : bodies) {
-        body->Integrate(fixedDeltaTime); // dt=1.0f
+        body->Integrate(fixedDeltaTime);
     }
 }
 

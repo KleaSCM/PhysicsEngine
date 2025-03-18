@@ -82,23 +82,17 @@ void RigidBody::Integrate(float dt) {
 
     // Compute linear acceleration: a = F/m
     Vector3 acceleration = forceAccum * invMass;
-
     position += velocity * dt + acceleration * (0.5f * dt * dt); 
-
     // Update velocity: v = v0 + a * dt
     velocity += acceleration * dt;
-
     // Compute angular acceleration: α = I⁻¹ * τ
     Vector3 angularAcceleration = invInertiaTensor * torqueAccum;
-
     // Update angular velocity: ω = ω0 + α * dt
     angularVelocity += angularAcceleration * dt;
-
     // Update rotation using quaternion integration
     Quaternion deltaRotation = Quaternion(angularVelocity * dt, 0.0f) * rotation * 0.5f;
     rotation += deltaRotation;
     rotation.Normalize();  // Ensure quaternion remains unit-length
-
     // Reset forces and torques after integration
     ClearForces();
 }
