@@ -58,10 +58,12 @@ void testTorque() {
 
     body.Integrate(1.0f);  // Simulate 1 second
 
-    assertApprox(body.angularVelocity.z, 5.0f); // ω = τ * dt 
+    std::cout << "DEBUG: Angular Velocity Z = " << body.angularVelocity.z << std::endl;
+    assertApprox(body.angularVelocity.z, 5.0f);
 
     std::cout << "✅ testTorque passed!" << std::endl;
 }
+
 
 
 /**
