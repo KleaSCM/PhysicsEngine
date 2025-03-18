@@ -8,8 +8,12 @@
  * @param b Second value.
  * @param epsilon Allowable error margin.
  */
-void assertApprox(float a, float b, float epsilon = 0.0001f) {
-    assert(std::abs(a - b) < epsilon);
+void assertApprox(float a, float b, float epsilon = 1e-5f) {  
+    if (std::abs(a - b) >= epsilon) {
+        std::cerr << "Assertion failed: " << a << " != " << b
+                  << " (diff = " << std::abs(a - b) << ", epsilon = " << epsilon << ")\n";
+        assert(false);
+    }
 }
 
 /**
