@@ -3,8 +3,8 @@
 #include "UniformGridBroadPhase.h"
 #include "AABB.h"  // Provides ComputeAABB, ComputeAABBCollision, ResolveAABBCollision
 
-// the CollisionShape enum is assumed to be declared in RigidBody.h, e.g.:
-// enum class CollisionShape { Sphere, AABB };
+// Assumes that RigidBody.h now has an enum CollisionShape { Sphere, AABB }
+// and members: CollisionShape shape; and Vector3 halfExtents;
 
 void PhysicsWorld::AddBody(RigidBody* body) {
     bodies.push_back(body);
@@ -21,14 +21,13 @@ void PhysicsWorld::Step() {
     }
 
     // 3) Use the broad-phase (Uniform Grid) to get potential colliding pairs.
-    //    UniformGridBroadPhase partitions space to reduce O(n^2) checks.
-    UniformGridBroadPhase grid(2.0f); // cell size chosen as 2.0; adjust as needed.
+    UniformGridBroadPhase grid(2.0f); // Choose an appropriate cell size.
     grid.Update(bodies);
     std::vector<std::pair<RigidBody*, RigidBody*>> potentialPairs = grid.GetPotentialPairs();
 
     // 4) Narrow-phase collision detection & resolution.
-    float restitution = 0.5f;    // Coefficient of restitution (bounciness).
-    float friction    = 0.4f;    // Coulomb friction coefficient.
+    float restitution = 0.5f;    // Coefficient of restitution.
+    float friction    = 0.4f;    // Friction coefficient.
     for (auto& pair : potentialPairs) {
         RigidBody* a = pair.first;
         RigidBody* b = pair.second;
@@ -38,16 +37,16 @@ void PhysicsWorld::Step() {
             continue;
         }
 
-        // Branch by collision shape type.
+        // Branch based on collision shape.
         if (a->shape == CollisionShape::Sphere && b->shape == CollisionShape::Sphere) {
-            // Sphere vs. sphere narrow-phase.
+            // Sphere vs. Sphere collision.
             Vector3 normal;
             float penetration = Collision::SphereVsSphere(*a, *b, normal);
             if (penetration > 0.0f) {
                 Collision::ResolveSphereSphere(*a, *b, normal, penetration, restitution, friction);
             }
         } else if (a->shape == CollisionShape::AABB && b->shape == CollisionShape::AABB) {
-            // Both objects use AABB as their collision shape.
+            // AABB vs. AABB collision.
             AABB boxA = ComputeAABB(a->position, a->halfExtents);
             AABB boxB = ComputeAABB(b->position, b->halfExtents);
             float penetration;
@@ -56,7 +55,7 @@ void PhysicsWorld::Step() {
                 ResolveAABBCollision(*a, *b, normal, penetration, restitution, friction);
             }
         } else if (a->shape == CollisionShape::Sphere && b->shape == CollisionShape::AABB) {
-            // Mixed: Treat the sphere as an AABB with equal half extents (radius).
+            // Mixed: Treat the sphere as an AABB with half-extents equal to its radius.
             AABB boxA = ComputeAABB(a->position, Vector3(a->radius, a->radius, a->radius));
             AABB boxB = ComputeAABB(b->position, b->halfExtents);
             float penetration;
@@ -65,7 +64,7 @@ void PhysicsWorld::Step() {
                 ResolveAABBCollision(*a, *b, normal, penetration, restitution, friction);
             }
         } else if (a->shape == CollisionShape::AABB && b->shape == CollisionShape::Sphere) {
-            // Mixed: Treat the sphere as an AABB with equal half extents (radius).
+            // Mixed: Treat the sphere as an AABB with half-extents equal to its radius.
             AABB boxA = ComputeAABB(a->position, a->halfExtents);
             AABB boxB = ComputeAABB(b->position, Vector3(b->radius, b->radius, b->radius));
             float penetration;
@@ -78,7 +77,6 @@ void PhysicsWorld::Step() {
 }
 
 void PhysicsWorld::ApplyGlobalForce(const Vector3& force) {
-    // Apply force = mass * acceleration (e.g., gravity) to all dynamic bodies.
     for (RigidBody* body : bodies) {
         if (body->invMass > 0.0f) {
             body->ApplyForce(force * body->mass);

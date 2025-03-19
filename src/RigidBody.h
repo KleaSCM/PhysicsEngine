@@ -1,12 +1,20 @@
-#pragma once  // Ensures this file is only included once during compilation
+#pragma once  
+#include "MathUtils.h"  
 
-#include "MathUtils.h"  // Provides vector math and quaternion utilities
+/**
+ * @enum CollisionShape
+ * @brief Enumerates the collision shape types.
+ */
+enum class CollisionShape {
+    Sphere,
+    AABB
+};
 
 /**
  * @class RigidBody
  * @brief Represents a physical object in the simulation.
  * 
- * A RigidBody has a position, velocity, rotation, mass, and radius (for sphere collisions).
+ * A RigidBody has a position, velocity, rotation, mass, and collision shape data.
  * It can be affected by external forces and follows Newtonian mechanics.
  */
 class RigidBody {
@@ -22,14 +30,17 @@ public:
     Matrix3 inertiaTensor;    ///< 3x3 matrix representing rotational inertia (if used).
     Matrix3 invInertiaTensor; ///< Precomputed inverse of the inertia tensor.
 
+    // Collision shape data:
+    CollisionShape shape;     ///< Collision shape type (Sphere or AABB).
     float radius;             ///< Collision radius for sphere-based collision.
+    Vector3 halfExtents;      ///< Half-dimensions along each axis for AABB collisions.
 
     Vector3 forceAccum;       ///< Accumulated force for the current physics step.
     Vector3 torqueAccum;      ///< Accumulated torque for the current physics step.
 
     /**
      * @brief Constructs a RigidBody with default values.
-     * @note Mass defaults to 0 (static). Radius defaults to 1 for sphere collisions.
+     * @note Mass defaults to 0 (static). Shape defaults to Sphere, radius to 1, and halfExtents to (0.5,0.5,0.5).
      */
     RigidBody();
 
@@ -46,13 +57,19 @@ public:
     void SetRadius(float r) { radius = r; }
 
     /**
+     * @brief Sets the half extents (for AABB collisions).
+     * @param he Half extents vector.
+     */
+    void SetHalfExtents(const Vector3& he) { halfExtents = he; }
+
+    /**
      * @brief Applies a force to the object's center of mass.
      * @param force Force vector (in Newtons).
      */
     void ApplyForce(const Vector3& force);
 
     /**
-     * @brief Applies a force at a specific point relative to the body's center of mass.
+     * @brief Applies a force at a specific point relative to the object's center of mass.
      * @param force Force vector (N).
      * @param point World-space point where the force is applied.
      */

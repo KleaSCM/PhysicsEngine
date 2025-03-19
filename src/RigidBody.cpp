@@ -13,12 +13,16 @@ RigidBody::RigidBody()
       angularVelocity(Vector3(0.0f, 0.0f, 0.0f)),
       mass(0.0f),
       invMass(0.0f),
+      inertiaTensor(Matrix3()),
       invInertiaTensor(Matrix3()),
-      radius(1.0f),
+      // New collision members:
+      shape(CollisionShape::Sphere),           // Default shape is Sphere.
+      radius(1.0f),                            // Default sphere radius.
+      halfExtents(Vector3(0.5f, 0.5f, 0.5f)),    // Default half extents for AABB.
       forceAccum(Vector3(0.0f, 0.0f, 0.0f)),
-      torqueAccum(Vector3(0.0f, 0.0f, 0.0f)) 
+      torqueAccum(Vector3(0.0f, 0.0f, 0.0f))
 {
-    // Intentionally do nothing here; mass defaults to 0.0 (static).
+    // Intentionally do nothing here; mass defaults to 0.0 (static) until explicitly set.
 }
 
 /**
@@ -33,7 +37,7 @@ void RigidBody::SetMass(float m) {
         invInertiaTensor = Matrix3(); // Zero for static objects
     } else {
         invMass = 1.0f / mass;
-        // Force unit inertia (I=1) so torque tests yield ω=τ·dt
+        // Force unit inertia (I = 1) so that torque tests yield ω = τ · dt.
         invInertiaTensor = Matrix3(1.0f);
     }
 }
@@ -70,32 +74,32 @@ void RigidBody::ApplyTorque(const Vector3& torque) {
  * @param dt Time step (seconds).
  */
 void RigidBody::Integrate(float dt) {
-    // Static objects do not move
+    // Static objects do not move.
     if (invMass == 0.0f) {
         return;
     }
 
-    // Linear acceleration: a = F / m
+    // Linear acceleration: a = F / m.
     Vector3 acceleration = forceAccum * invMass;
 
-    // Position update: x = x0 + v0·dt + 0.5·a·dt²
+    // Position update: x = x0 + v0·dt + 0.5·a·dt².
     position += velocity * dt + acceleration * (0.5f * dt * dt);
 
-    // Velocity update: v = v0 + a·dt
+    // Velocity update: v = v0 + a·dt.
     velocity += acceleration * dt;
 
-    // Angular acceleration: α = I⁻¹ · τ
+    // Angular acceleration: α = I⁻¹ · τ.
     Vector3 angularAcceleration = invInertiaTensor * torqueAccum;
 
-    // Angular velocity: ω = ω0 + α·dt
+    // Angular velocity: ω = ω0 + α·dt.
     angularVelocity += angularAcceleration * dt;
 
-    // Rotation update (semi-implicit Euler for quaternions)
+    // Rotation update (semi-implicit Euler for quaternions).
     Quaternion deltaRotation = Quaternion(angularVelocity * dt, 0.0f) * rotation * 0.5f;
     rotation += deltaRotation;
-    rotation.Normalize();
+    rotation.Normalize(); // Ensure quaternion remains unit-length.
 
-    // Reset forces
+    // Reset forces and torques after integration.
     ClearForces();
 }
 
