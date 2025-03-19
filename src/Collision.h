@@ -3,40 +3,37 @@
 #include "RigidBody.h"
 
 /**
- * @brief Simple collision utility functions
+ * @namespace Collision
+ * @brief Contains utility functions for detecting and resolving collisions.
  */
 namespace Collision {
-    /**
-     * @brief Checks whether two spheres overlap and returns the penetration depth.
-     * @param a First RigidBody (sphere).
-     * @param b Second RigidBody (sphere).
-     * @param radiusA Radius of body a.
-     * @param radiusB Radius of body b.
-     * @param normal A unit vector pointing from a to b on collision.
-     * @return Penetration depth (if > 0, there's a collision).
-     */
-    float SphereVsSphere(
-        const RigidBody& a,
-        const RigidBody& b,
-        float radiusA,
-        float radiusB,
-        Vector3& normal
-    );
 
     /**
-     * @brief Resolves a sphere-sphere collision via impulse.
-     * @param a First RigidBody.
-     * @param b Second RigidBody.
-     * @param normal Collision normal from a to b.
-     * @param penetration Depth of penetration (>0 means overlapping).
-     * @param restitution Coefficient of restitution (bounciness).
+     * @brief Checks whether two spheres (RigidBody objects) overlap and returns the penetration depth.
+     *        Uses each RigidBody's `radius` field directly.
+     * @param a      First RigidBody (sphere).
+     * @param b      Second RigidBody (sphere).
+     * @param normal Unit vector pointing from A to B on collision.
+     * @return       The penetration depth. If > 0, there's an overlap.
      */
-    void ResolveSphereSphere(
-        RigidBody& a,
-        RigidBody& b,
-        const Vector3& normal,
-        float penetration,
-        float restitution
-    );
-};
+    float SphereVsSphere(const RigidBody& a,
+                         const RigidBody& b,
+                         Vector3& normal);
 
+    /**
+     * @brief Resolves a sphere-sphere collision via impulse, including friction.
+     * @param a            First RigidBody.
+     * @param b            Second RigidBody.
+     * @param normal       Collision normal from A to B.
+     * @param penetration  Depth of penetration (>0 means overlapping).
+     * @param restitution  Coefficient of restitution (bounciness) in [0..1].
+     * @param frictionCoeff Coulomb friction coefficient (e.g., 0.0 to 1.0).
+     */
+    void ResolveSphereSphere(RigidBody& a,
+                             RigidBody& b,
+                             const Vector3& normal,
+                             float penetration,
+                             float restitution,
+                             float frictionCoeff);
+
+} // namespace Collision

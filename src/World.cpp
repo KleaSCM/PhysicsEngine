@@ -1,44 +1,53 @@
 #include "World.h"
+#include "Collision.h"
 
-/**
- * @brief Adds a RigidBody to the world.
- */
 void PhysicsWorld::AddBody(RigidBody* body) {
     bodies.push_back(body);
 }
 
-/**
- * @brief Steps the simulation:
- * 1. Apply global forces (e.g., gravity).
- * 2. Integrate all bodies.
- * Collision detection & resolution will be added here later.
- */
 void PhysicsWorld::Step() {
-    // 1) Apply gravity once
-    Vector3 gravity(0, -9.8f, 0);
-    ApplyGlobalForce(gravity); 
-    // 2) Integrate each body once
-    for (auto* body : bodies) {
+    // 1) Apply gravity to all bodies
+    Vector3 gravity(0.0f, -9.8f, 0.0f);
+    ApplyGlobalForce(gravity);
+
+    // 2) Integrate each body
+    for (RigidBody* body : bodies) {
         body->Integrate(fixedDeltaTime);
     }
-}
 
+    // 3) Collision detection & resolution (naive O(n^2))
+    float restitution = 0.5f;    // semi-bouncy collisions
+    float friction    = 0.4f;    // example friction coefficient
+    for (size_t i = 0; i < bodies.size(); i++) {
+        for (size_t j = i + 1; j < bodies.size(); j++) {
+            RigidBody* a = bodies[i];
+            RigidBody* b = bodies[j];
 
-/**
- * @brief Applies a uniform force to all dynamic (non-static) bodies.
- */
-void PhysicsWorld::ApplyGlobalForce(const Vector3& force) {
-    for (RigidBody* body : bodies) {
-        if (body->invMass > 0.0f) {
-            body->ApplyForce(force * body->mass);  // F = m * a
+            // Skip if both are static
+            if (a->invMass == 0.0f && b->invMass == 0.0f) {
+                continue;
+            }
+
+            // Check sphere-sphere collision
+            Vector3 normal;
+            float penetration = Collision::SphereVsSphere(*a, *b, normal);
+            if (penetration > 0.0f) {
+                // Resolve with impulse, using friction
+                Collision::ResolveSphereSphere(*a, *b, normal, penetration, restitution, friction);
+            }
         }
     }
 }
 
-/**
- * @brief Clears all bodies from the world.
- */
+void PhysicsWorld::ApplyGlobalForce(const Vector3& force) {
+    for (RigidBody* body : bodies) {
+        // F = m*g => only for dynamic bodies
+        if (body->invMass > 0.0f) {
+            body->ApplyForce(force * body->mass);
+        }
+    }
+}
+
 void PhysicsWorld::Clear() {
     bodies.clear();
 }
-
