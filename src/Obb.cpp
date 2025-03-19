@@ -97,49 +97,87 @@ bool ComputeOBBCollision(const OBB& a, const OBB& b, float& penetration, Vector3
  * @param restitution Coefficient of restitution (bounciness).
  * @param friction Coulomb friction coefficient.
  */
-void ResolveOBBCollision(RigidBody& a, RigidBody& b, const Vector3& normal, float penetration, float restitution, float friction) {
-    // Positional correction (prevents sinking)
-    float invMassSum = a.invMass + b.invMass;
-    if (invMassSum > 0.0f) {
-        float correction = (penetration / invMassSum) * 0.5f;
-        a.position -= normal * (correction * a.invMass);
-        b.position += normal * (correction * b.invMass);
-    }
 
-    // Relative velocity
-    Vector3 rv = b.velocity - a.velocity;
-    float velAlongNormal = rv.Dot(normal);
+ void ResolveOBBAABBCollision(RigidBody& a, RigidBody& b, const Vector3& normal, float penetration, float restitution, float friction) {
+    // Step 1: Position Correction (Prevent Overlapping)
+    Vector3 correction = normal * penetration * 0.5f; // Push each body half the penetration distance
+    if (a.invMass > 0.0f) a.position += correction;
+    if (b.invMass > 0.0f) b.position -= correction;
 
-    // Skip if separating
-    if (velAlongNormal > 0.0f) {
-        return;
-    }
+    // Step 2: Compute Relative Velocity
+    Vector3 relativeVelocity = b.velocity - a.velocity;
+    float velocityAlongNormal = relativeVelocity.Dot(normal);
 
-    // Impulse calculation
-    float e = restitution;
-    float j = -(1.0f + e) * velAlongNormal / invMassSum;
+    // If objects are separating, do nothing
+    if (velocityAlongNormal > 0) return;
+
+    // Step 3: Compute Restitution Impulse
+    float e = std::min(a.restitution, b.restitution); // Use the lower restitution
+    float j = -(1 + e) * velocityAlongNormal;
+    j /= a.invMass + b.invMass; // Mass-based weighting
+
+    // Apply Impulse
     Vector3 impulse = normal * j;
-    a.velocity -= impulse * a.invMass;
-    b.velocity += impulse * b.invMass;
+    if (a.invMass > 0.0f) a.velocity -= impulse * a.invMass;
+    if (b.invMass > 0.0f) b.velocity += impulse * b.invMass;
 
-    // Friction impulse
-    rv = b.velocity - a.velocity;
-    float vn = rv.Dot(normal);
+    // Step 4: Apply Friction Impulse
+    Vector3 tangent = (relativeVelocity - normal * velocityAlongNormal).Normalize();
+    float jt = -relativeVelocity.Dot(tangent);
+    jt /= a.invMass + b.invMass;
 
-    Vector3 tangentVel = rv - (vn * normal);
-    float tLen = tangentVel.Length();
-    if (tLen > 1e-6f) {
-        Vector3 tangentDir = tangentVel / tLen;
-        float jt = -tLen / invMassSum;
-        float maxFriction = friction * std::fabs(j);
-        if (std::fabs(jt) > maxFriction) {
-            jt = (jt > 0.0f) ? maxFriction : -maxFriction;
-        }
-        Vector3 frictionImpulse = tangentDir * jt;
-        a.velocity -= frictionImpulse * a.invMass;
-        b.velocity += frictionImpulse * b.invMass;
-    }
+    // Clamp friction to Coulomb model
+    float mu = std::sqrt(a.friction * b.friction); // Use the geometric mean of both frictions
+    float frictionImpulseMagnitude = std::clamp(jt, -j * mu, j * mu);
+    
+    Vector3 frictionImpulse = tangent * frictionImpulseMagnitude;
+    if (a.invMass > 0.0f) a.velocity -= frictionImpulse * a.invMass;
+    if (b.invMass > 0.0f) b.velocity += frictionImpulse * b.invMass;
 }
+
+// void ResolveOBBCollision(RigidBody& a, RigidBody& b, const Vector3& normal, float penetration, float restitution, float friction) {
+//     // Positional correction (prevents sinking)
+//     float invMassSum = a.invMass + b.invMass;
+//     if (invMassSum > 0.0f) {
+//         float correction = (penetration / invMassSum) * 0.5f;
+//         a.position -= normal * (correction * a.invMass);
+//         b.position += normal * (correction * b.invMass);
+//     }
+
+//     // Relative velocity
+//     Vector3 rv = b.velocity - a.velocity;
+//     float velAlongNormal = rv.Dot(normal);
+
+//     // Skip if separating
+//     if (velAlongNormal > 0.0f) {
+//         return;
+//     }
+
+//     // Impulse calculation
+//     float e = restitution;
+//     float j = -(1.0f + e) * velAlongNormal / invMassSum;
+//     Vector3 impulse = normal * j;
+//     a.velocity -= impulse * a.invMass;
+//     b.velocity += impulse * b.invMass;
+
+//     // Friction impulse
+//     rv = b.velocity - a.velocity;
+//     float vn = rv.Dot(normal);
+
+//     Vector3 tangentVel = rv - (vn * normal);
+//     float tLen = tangentVel.Length();
+//     if (tLen > 1e-6f) {
+//         Vector3 tangentDir = tangentVel / tLen;
+//         float jt = -tLen / invMassSum;
+//         float maxFriction = friction * std::fabs(j);
+//         if (std::fabs(jt) > maxFriction) {
+//             jt = (jt > 0.0f) ? maxFriction : -maxFriction;
+//         }
+//         Vector3 frictionImpulse = tangentDir * jt;
+//         a.velocity -= frictionImpulse * a.invMass;
+//         b.velocity += frictionImpulse * b.invMass;
+//     }
+
 
 /**
  * @brief Computes collision between an OBB and an AABB.
