@@ -39,9 +39,6 @@ public:
     Vector3 forceAccum;       ///< Accumulated force for the current physics step.
     Vector3 torqueAccum;      ///< Accumulated torque for the current physics step.
 
-    CollisionShape shape;     ///< Collision shape type (Sphere or Obb).
-    Vector3 halfExtents;      ///< Half-dimensions along each axis for OBB collisions.  
-    Matrix3 rotation;         ///< Rotation matrix defining OBB orientation.
     /**
      * @brief Constructs a RigidBody with default values.
      * @note Mass defaults to 0 (static). Shape defaults to Sphere, radius to 1, and halfExtents to (0.5,0.5,0.5).

@@ -1,10 +1,8 @@
 #include "World.h"
 #include "Collision.h"
 #include "UniformGridBroadPhase.h"
-#include "AABB.h"  // Provides ComputeAABB, ComputeAABBCollision, ResolveAABBCollision
-
-// Assumes that RigidBody.h now has an enum CollisionShape { Sphere, AABB }
-// and members: CollisionShape shape; and Vector3 halfExtents;
+#include "AABB.h"
+#include "OBB.h"
 
 void PhysicsWorld::AddBody(RigidBody* body) {
     bodies.push_back(body);
@@ -28,6 +26,7 @@ void PhysicsWorld::Step() {
     // 4) Narrow-phase collision detection & resolution.
     float restitution = 0.5f;    // Coefficient of restitution.
     float friction    = 0.4f;    // Friction coefficient.
+    
     for (auto& pair : potentialPairs) {
         RigidBody* a = pair.first;
         RigidBody* b = pair.second;
@@ -54,25 +53,33 @@ void PhysicsWorld::Step() {
             if (ComputeAABBCollision(boxA, boxB, penetration, normal)) {
                 ResolveAABBCollision(*a, *b, normal, penetration, restitution, friction);
             }
-        } else if (a->shape == CollisionShape::Sphere && b->shape == CollisionShape::AABB) {
-            // Mixed: Treat the sphere as an AABB with half-extents equal to its radius.
-            AABB boxA = ComputeAABB(a->position, Vector3(a->radius, a->radius, a->radius));
-            AABB boxB = ComputeAABB(b->position, b->halfExtents);
+        } else if (a->shape == CollisionShape::OBB && b->shape == CollisionShape::OBB) {
+            // OBB vs. OBB collision.
+            OBB obbA = { a->position, a->halfExtents, a->rotation.ToMatrix() };
+            OBB obbB = { b->position, b->halfExtents, b->rotation.ToMatrix() };
             float penetration;
             Vector3 normal;
-            if (ComputeAABBCollision(boxA, boxB, penetration, normal)) {
-                ResolveAABBCollision(*a, *b, normal, penetration, restitution, friction);
+            if (ComputeOBBCollision(obbA, obbB, penetration, normal)) {
+                ResolveOBBCollision(*a, *b, normal, penetration, restitution, friction);
             }
-        } else if (a->shape == CollisionShape::AABB && b->shape == CollisionShape::Sphere) {
-            // Mixed: Treat the sphere as an AABB with half-extents equal to its radius.
-            AABB boxA = ComputeAABB(a->position, a->halfExtents);
-            AABB boxB = ComputeAABB(b->position, Vector3(b->radius, b->radius, b->radius));
-            float penetration;
-            Vector3 normal;
-            if (ComputeAABBCollision(boxA, boxB, penetration, normal)) {
-                ResolveAABBCollision(*a, *b, normal, penetration, restitution, friction);
-            }
-        }
+        } else if ((a->shape == CollisionShape::OBB && b->shape == CollisionShape::AABB) ||
+        (a->shape == CollisionShape::AABB && b->shape == CollisionShape::OBB)) {
+ // Mixed: OBB vs. AABB collision.
+ OBB obb = (a->shape == CollisionShape::OBB) ? OBB{ a->position, a->halfExtents, a->rotation.ToMatrix() } 
+                                              : OBB{ b->position, b->halfExtents, b->rotation.ToMatrix() };
+
+ AABB aabb = (a->shape == CollisionShape::AABB) ? ComputeAABB(a->position, a->halfExtents) 
+                                                 : ComputeAABB(b->position, b->halfExtents);
+
+ float penetration;
+ Vector3 normal;
+ 
+ // Use the correct function for OBB vs AABB collision
+ if (ComputeOBBAABBCollision(obb, aabb, penetration, normal)) {
+     ResolveOBBAABBCollision(*a, *b, normal, penetration, restitution, friction);
+ }
+}
+
     }
 }
 
