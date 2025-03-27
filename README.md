@@ -1,27 +1,40 @@
 # 💥 PhysicsEngine
-A C++-based physics engine built from the ground up with a focus on clarity, modularity, and correctness.
-Designed for educational use, simulation, and integration into custom game or research environments.
+
+A C++-based modular physics engine built from the ground up with a focus on clarity, correctness, and real-time simulation. Designed for educational use, integration into custom engines, or research-driven physics systems.
 
 ## 💡 Features
+
 ### Collision Detection & Resolution
 - Sphere-vs-Sphere
 - AABB-vs-AABB
-- OBB-vs-OBB (using SAT)
-- OBB-vs-AABB hybrid detection    
+- OBB-vs-OBB (via Separating Axis Theorem)
+- Hybrid OBB-vs-AABB support
+
 ### Impulse Resolution
 - Positional correction
-- Friction and restitution (Coulomb model)
-- Contact normals and separation forces    
+- Restitution and friction (Coulomb model with clamped tangents)
+- Directional contact normals and separation resolution
+
 ### Physics Core
-- RigidBody dynamics with linear & angular motion
-- Quaternion rotation + inertia tensor support
- - External force and torque accumulation
-- Integrator (semi-implicit Euler)    
-### Broad Phase
-- Uniform Grid-based spatial hashing for pair pruning    
-### Modular Math Library
-- Vector3, Matrix3, Quaternion with operator overloads
-- SAT, Dot/Cross product, normalization
+- RigidBody dynamics (linear & angular)
+- Quaternion-based rotation
+- Inertia tensor support
+- External force & torque accumulation
+- Semi-implicit Euler integration
+
+### Broad Phase Optimization
+- Uniform Grid-based spatial hashing
+- Efficient pruning of potential collision pairs
+
+### 🧮 Math Library
+- `Vector3`, `Matrix3`, `Quaternion` with C++ operator overloads
+- Dot, cross, normalization, SAT support
+
+---
+
+## 🧱 Project Structure
+
+
 ---
 ## 🧱 Project Structure
 📁 docs/             — Project documentation (design notes, architecture)  
@@ -29,30 +42,50 @@ Designed for educational use, simulation, and integration into custom game or re
 📁 src/                 — Engine source files  
 │   ├── AABB.*, Collision.*, Obb.*, RigidBody.*, etc.  
 📁 tests/  
-📁 web/           
+📁 web/     
+
 ---
 ## 🔧 How It Works
+
 ### RigidBody Simulation
-- Each object holds state: position, velocity, orientation, mass, etc.
-- Force/torque accumulation and Euler-based integration
-- Quaternion rotation for 3D angular motion
+- Tracks position, velocity, angular state, mass
+- Accumulates forces & torques per frame
+- Semi-implicit Euler integration
+- Rotation via quaternions
+
 ### Collision System
-- Contact resolution via impulse
-- Supports multiple shape types
-- Collision normal and penetration calculated per case
-- Friction applied along tangents using clamped Coulomb model
+- Calculates penetration & normals per shape
+- Handles multiple collision types dynamically
+- Friction + restitution resolved per frame
+- Works with static & dynamic rigidbodies
+
 ### Broad Phase
-- Uniform 3D spatial hash grid
-- Reduces pairwise checks (n² → near-linear)
-- Queries neighbors only
+- Hash-based grid for spatial partitioning
+- 27-cell neighbor checks for localized collisions
+- Reduces brute-force pairwise checks (`O(n²)` → `O(n)`ish)
+
 ---
-## 🚧 Current Work in Progress
-- Constraint Solvers (Constraints.cpp)
-- Physics integration layer (physics.cpp)
-- Timer and profiling utilities (Timer.cpp)
-- Unit tests for each module
-- Web/Frontend visualisation (likely WebGL or React-based)
----  
-## 🧪 Planned Tests
-Each module (`AABB`, `Sphere`, `OBB`, etc.) will be tested with a dedicated test suite in the `tests/` directory,
-designed to validate edge cases and compliance with real-world expectations.
+
+## 🚧 Work in Progress
+
+- ⛓ Constraint solver (hinges, springs, fixed joints)
+- 🧮 Physics integration core (`physics.cpp`)
+- ⏱ Timer utilities for profiling
+- 🔬 Unit tests (AABB, Sphere, OBB, etc.)
+- 🖥 Web frontend visualization (WebGL or React)
+
+---
+## 🧪 Unit Testing
+
+The `tests/` folder contains modular unit tests for each major component:
+
+- `test_collision.cpp`: Verifies all shape collision interactions and impulse responses.
+- `test_rigidbody.cpp`: Validates RigidBody integration, force accumulation, and mass-based behavior.
+- `test_mathutils.cpp`: Ensures correctness for Vector, Quaternion, and Matrix operations.
+- `test_uniformgrid.cpp`: Confirms spatial hashing, cell assignment, and broad-phase pair detection.
+- `test_world.cpp`: End-to-end physics stepping and scene integration.
+- `test_constraints.cpp`: Placeholder for upcoming constraint solver testing.
+
+All tests are managed through CMake and will be expanded as new modules are developed.
+
+
