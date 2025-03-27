@@ -4,7 +4,7 @@
 /**
  * @brief Default constructor initializes with zero velocity and zero forces.
  * 
- * @note We do NOT set the mass here; the user can call SetMass() explicitly.
+ * @note do NOT set the mass here; the user can call SetMass() explicitly.
  */
 RigidBody::RigidBody() 
     : position(Vector3(0.0f, 0.0f, 0.0f)),
