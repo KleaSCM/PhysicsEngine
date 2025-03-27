@@ -31,11 +31,6 @@ A C++-based modular physics engine built from the ground up with a focus on clar
 - Dot, cross, normalization, SAT support
 
 ---
-
-## 🧱 Project Structure
-
-
----
 ## 🧱 Project Structure
 📁 docs/             — Project documentation (design notes, architecture)  
 📁 scripts/           — Build scripts or tools  
