@@ -33,7 +33,7 @@ A C++-based modular physics engine built from the ground up with a focus on clar
 ---
 ## 🧱 Project Structure
 
-``
+
 PhysicsEngine/
 ├── docs/            # Project documentation (design notes, architecture)
 ├── scripts/         # Build scripts or tools
@@ -43,7 +43,6 @@ PhysicsEngine/
 ├── .gitignore
 ├── LICENSE
 └── README.md
- ``
 
 ---
 ## 🔧 How It Works
