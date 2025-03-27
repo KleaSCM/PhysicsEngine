@@ -1,9 +1,8 @@
 # 💥 PhysicsEngine
 A C++-based physics engine built from the ground up with a focus on clarity, modularity, and correctness.
 Designed for educational use, simulation, and integration into custom game or research environments.
----
-## 💡 Features
 
+## 💡 Features
 ### Collision Detection & Resolution
 - Sphere-vs-Sphere
 - AABB-vs-AABB
