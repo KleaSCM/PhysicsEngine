@@ -1,10 +1,9 @@
 # 💥 PhysicsEngine
-
-A C++-based modular physics engine built from the ground up with a focus on clarity, correctness, and real-time simulation. Designed for educational use, integration into custom engines, or research-driven physics systems.
-
 ![C++](https://img.shields.io/badge/language-C++17-blue.svg)
 ![Status](https://img.shields.io/badge/status-WIP-orange.svg)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey.svg)
+
+A C++-based modular physics engine built from the ground up with a focus on clarity, correctness, and real-time simulation. Designed for educational use, integration into custom engines, or research-driven physics systems.
 
 ## 💡 Features
 
