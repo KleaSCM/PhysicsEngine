@@ -32,12 +32,18 @@ A C++-based modular physics engine built from the ground up with a focus on clar
 
 ---
 ## 🧱 Project Structure
-📁 docs/             — Project documentation (design notes, architecture)  
-📁 scripts/           — Build scripts or tools  
-📁 src/                 — Engine source files  
-│   ├── AABB.*, Collision.*, Obb.*, RigidBody.*, etc.  
-📁 tests/  
-📁 web/     
+
+``
+PhysicsEngine/
+├── docs/            # Project documentation (design notes, architecture)
+├── scripts/         # Build scripts or tools
+├── src/             # Engine source files (AABB.*, Collision.*, Obb.*, etc.)
+├── tests/           # Unit tests (modular)
+├── web/             # Optional frontend visualiser
+├── .gitignore
+├── LICENSE
+└── README.md
+ ``
 
 ---
 ## 🔧 How It Works
