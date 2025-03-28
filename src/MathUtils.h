@@ -1,7 +1,8 @@
 #pragma once
 
 #include <cmath>  
-#include <algorithm> 
+#include <algorithm>
+#include <stdexcept>
 
 /**
  * @class Vector3
@@ -22,11 +23,30 @@ struct Vector3 {
     Vector3 operator-(const Vector3& v) const { return {x - v.x, y - v.y, z - v.z}; }
     Vector3 operator*(float s) const { return {x * s, y * s, z * s}; }
     Vector3 operator/(float s) const { return {x / s, y / s, z / s}; }
+    Vector3 operator*(const Vector3& v) const { return {x * v.x, y * v.y, z * v.z}; }
 
     float Length() const { return std::sqrt(x*x + y*y + z*z); }
     Vector3 Normalize() const { float len = Length(); return len > 0 ? *this / len : *this; }
     float Dot(const Vector3& v) const { return x*v.x + y*v.y + z*v.z; }
     Vector3 Cross(const Vector3& v) const { return {y*v.z - z*v.y, z*v.x - x*v.z, x*v.y - y*v.x}; }
+
+    // Array access operators
+    float& operator[](int index) {
+        switch (index) {
+            case 0: return x;
+            case 1: return y;
+            case 2: return z;
+            default: throw std::out_of_range("Vector3 index out of range");
+        }
+    }
+    float operator[](int index) const {
+        switch (index) {
+            case 0: return x;
+            case 1: return y;
+            case 2: return z;
+            default: throw std::out_of_range("Vector3 index out of range");
+        }
+    }
 };
 
 inline Vector3 operator*(float scalar, const Vector3& v) {
@@ -52,6 +72,18 @@ struct Matrix3 {
         return {m[0][0] * v.x + m[0][1] * v.y + m[0][2] * v.z,
                 m[1][0] * v.x + m[1][1] * v.y + m[1][2] * v.z,
                 m[2][0] * v.x + m[2][1] * v.y + m[2][2] * v.z};
+    }
+
+    Matrix3 operator*(const Matrix3& other) const {
+        Matrix3 result;
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                result.m[i][j] = m[i][0] * other.m[0][j] +
+                                m[i][1] * other.m[1][j] +
+                                m[i][2] * other.m[2][j];
+            }
+        }
+        return result;
     }
 
     Matrix3 Transpose() const {

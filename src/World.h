@@ -2,6 +2,8 @@
 #include <vector>
 #include "RigidBody.h"
 
+namespace Physics {
+
 /**
  * @class PhysicsWorld
  * @brief Manages a collection of RigidBody objects and performs physics simulation.
@@ -33,4 +35,6 @@ public:
      */
     void Clear();
 };
+
+} // namespace Physics
 

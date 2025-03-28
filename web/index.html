@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Physics Engine Visualization</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #1a1a1a;
+        }
+        #canvas {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
+        #controls {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .stats {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div id="controls">
+        <h3>Controls</h3>
+        <button id="toggleDebug">Toggle Debug</button>
+        <button id="toggleColliders">Toggle Colliders</button>
+        <button id="toggleGrid">Toggle Grid</button>
+        <button id="resetScene">Reset Scene</button>
+        <button id="addBox">Add Box</button>
+        <button id="addSphere">Add Sphere</button>
+    </div>
+    <div id="stats" class="stats">
+        <h3>Stats</h3>
+        <div id="fps">FPS: 0</div>
+        <div id="bodies">Bodies: 0</div>
+        <div id="timeStep">Time Step: 0</div>
+    </div>
+    <script src="renderer.js"></script>
+</body>
+</html>

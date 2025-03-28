@@ -1,0 +1,14 @@
+{
+  "name": "physics-engine",
+  "version": "1.0.0",
+  "description": "Physics engine with web visualization",
+  "main": "index.js",
+  "scripts": {
+    "install": "node-gyp rebuild",
+    "build": "node-gyp rebuild",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "node-addon-api": "^7.0.0"
+  }
+} 

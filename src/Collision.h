@@ -1,11 +1,21 @@
 #pragma once
 
+#include "MathUtils.h"
 #include "RigidBody.h"
 
-/**
- * @namespace Collision
- * @brief Contains utility functions for detecting and resolving collisions.
- */
+namespace Physics {
+
+struct AABB {
+    Vector3 min;
+    Vector3 max;
+};
+
+struct OBB {
+    Vector3 position;
+    Vector3 halfExtents;
+    Matrix3 rotation;
+};
+
 namespace Collision {
 
     /**
@@ -85,3 +95,11 @@ namespace Collision {
                                 float frictionCoeff);
 
 } // namespace Collision
+
+// Global collision functions
+AABB ComputeAABB(const Vector3& position, const Vector3& halfExtents);
+bool ComputeAABBCollision(const AABB& a, const AABB& b, float& penetration, Vector3& normal);
+bool ComputeOBBCollision(const OBB& a, const OBB& b, float& penetration, Vector3& normal);
+bool ComputeOBBAABBCollision(const OBB& obb, const AABB& aabb, float& penetration, Vector3& normal);
+
+} // namespace Physics

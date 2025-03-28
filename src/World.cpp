@@ -4,6 +4,8 @@
 #include "AABB.h"
 #include "OBB.h"
 
+namespace Physics {
+
 void PhysicsWorld::AddBody(RigidBody* body) {
     bodies.push_back(body);
 }
@@ -46,37 +48,37 @@ void PhysicsWorld::Step() {
             }
         } else if (a->shape == CollisionShape::AABB && b->shape == CollisionShape::AABB) {
             // AABB vs. AABB collision.
-            AABB boxA = ComputeAABB(a->position, a->halfExtents);
-            AABB boxB = ComputeAABB(b->position, b->halfExtents);
+            Physics::AABB boxA = Physics::ComputeAABB(a->position, a->halfExtents);
+            Physics::AABB boxB = Physics::ComputeAABB(b->position, b->halfExtents);
             float penetration;
             Vector3 normal;
-            if (ComputeAABBCollision(boxA, boxB, penetration, normal)) {
+            if (Physics::ComputeAABBCollision(boxA, boxB, penetration, normal)) {
                 Collision::ResolveAABBCollision(*a, *b, normal, penetration, restitution, friction);
             }
         } else if (a->shape == CollisionShape::OBB && b->shape == CollisionShape::OBB) {
             // OBB vs. OBB collision.
-            OBB obbA = { a->position, a->halfExtents, a->rotation.ToMatrix() };
-            OBB obbB = { b->position, b->halfExtents, b->rotation.ToMatrix() };
+            Physics::OBB obbA = { a->position, a->halfExtents, a->rotation.ToMatrix() };
+            Physics::OBB obbB = { b->position, b->halfExtents, b->rotation.ToMatrix() };
             float penetration;
             Vector3 normal;
-            if (ComputeOBBCollision(obbA, obbB, penetration, normal)) {
+            if (Physics::ComputeOBBCollision(obbA, obbB, penetration, normal)) {
                 Collision::ResolveOBBCollision(*a, *b, normal, penetration, restitution, friction);
             }
         } else if ((a->shape == CollisionShape::OBB && b->shape == CollisionShape::AABB) ||
                    (a->shape == CollisionShape::AABB && b->shape == CollisionShape::OBB)) {
             // Mixed: OBB vs. AABB collision.
-            OBB obb;
-            AABB aabb;
+            Physics::OBB obb;
+            Physics::AABB aabb;
             if (a->shape == CollisionShape::OBB) {
                 obb = { a->position, a->halfExtents, a->rotation.ToMatrix() };
-                aabb = ComputeAABB(b->position, b->halfExtents);
+                aabb = Physics::ComputeAABB(b->position, b->halfExtents);
             } else {
                 obb = { b->position, b->halfExtents, b->rotation.ToMatrix() };
-                aabb = ComputeAABB(a->position, a->halfExtents);
+                aabb = Physics::ComputeAABB(a->position, a->halfExtents);
             }
             float penetration;
             Vector3 normal;
-            if (ComputeOBBAABBCollision(obb, aabb, penetration, normal)) {
+            if (Physics::ComputeOBBAABBCollision(obb, aabb, penetration, normal)) {
                 Collision::ResolveOBBAABBCollision(*a, *b, normal, penetration, restitution, friction);
             }
         }
@@ -94,3 +96,5 @@ void PhysicsWorld::ApplyGlobalForce(const Vector3& force) {
 void PhysicsWorld::Clear() {
     bodies.clear();
 }
+
+} // namespace Physics

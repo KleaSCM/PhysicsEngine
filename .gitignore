@@ -67,3 +67,37 @@ _deps
 *.log
 *.tmp
 *.bak
+
+# Node.js specific
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn-integrity
+.env
+.env.local
+.env.*.local
+
+# Project specific
+*.node
+binding.gyp.user
+build/Release/
+build/Debug/
+build/obj/
+build/tmp/
+build/out/
+build/CMakeFiles/
+build/CMakeCache.txt
+build/cmake_install.cmake
+build/install_manifest.txt
+build/compile_commands.json
+build/CTestTestfile.cmake
+build/_deps/
+build/CMakeFiles/
+build/CMakeCache.txt
+build/cmake_install.cmake
+build/install_manifest.txt
+build/compile_commands.json
+build/CTestTestfile.cmake
+build/_deps/
