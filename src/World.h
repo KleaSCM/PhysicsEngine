@@ -1,37 +1,35 @@
 #pragma once
-
 #include <vector>
 #include "RigidBody.h"
 
 /**
  * @class PhysicsWorld
- * @brief Manages multiple RigidBody instances and performs physics updates.
+ * @brief Manages a collection of RigidBody objects and performs physics simulation.
  */
 class PhysicsWorld {
 public:
-    std::vector<RigidBody*> bodies;  ///< Collection of all bodies in the simulation.
-    float fixedDeltaTime = 1.0f / 60.0f;  ///< Default fixed timestep at 60 FPS.
+    std::vector<RigidBody*> bodies;  ///< List of bodies in the simulation.
+    float fixedDeltaTime = 1.0f / 60.0f; ///< Fixed timestep (default: 1/60 seconds).
 
     /**
-     * @brief Adds a RigidBody to the world.
-     * @param body Pointer to a RigidBody object.
+     * @brief Adds a RigidBody to the simulation.
+     * @param body Pointer to the RigidBody to add.
      */
     void AddBody(RigidBody* body);
 
     /**
-     * @brief Steps the physics simulation by one fixed timestep.
-     * Applies forces (like gravity), then integrates each body.
+     * @brief Advances the simulation by one fixed timestep.
      */
     void Step();
 
     /**
-     * @brief Applies a uniform force (e.g., wind or gravity) to all non-static bodies.
-     * @param force The force vector applied to each body.
+     * @brief Applies a uniform force (e.g. gravity) to all dynamic bodies.
+     * @param force The force vector.
      */
     void ApplyGlobalForce(const Vector3& force);
 
     /**
-     * @brief Clears all RigidBodies from the world.
+     * @brief Clears all bodies from the simulation.
      */
     void Clear();
 };

@@ -102,4 +102,151 @@ void ResolveSphereSphere(RigidBody& a,
     }
 }
 
+void ResolveAABBCollision(RigidBody& a,
+                         RigidBody& b,
+                         const Vector3& normal,
+                         float penetration,
+                         float restitution,
+                         float frictionCoeff)
+{
+    // 1) Positional correction to remove overlap
+    float invMassSum = a.invMass + b.invMass;
+    if (invMassSum > 0.0f) {
+        float correction = (penetration / invMassSum) * 0.5f;
+        a.position -= normal * (correction * a.invMass);
+        b.position += normal * (correction * b.invMass);
+    }
+
+    // 2) Relative velocity
+    Vector3 rv = b.velocity - a.velocity;
+    float velAlongNormal = rv.Dot(normal);
+
+    // If they're separating, no impulse
+    if (velAlongNormal > 0.0f) {
+        return;
+    }
+
+    // 3) Normal impulse
+    float e = restitution;
+    float j = -(1.0f + e) * velAlongNormal / invMassSum;
+    Vector3 impulse = normal * j;
+    a.velocity -= impulse * a.invMass;
+    b.velocity += impulse * b.invMass;
+
+    // 4) Friction impulse
+    rv = b.velocity - a.velocity;
+    float vn = rv.Dot(normal);
+    Vector3 tangentVel = rv - (vn * normal);
+    float tLen = tangentVel.Length();
+    if (tLen > 1e-6f) {
+        Vector3 tangentDir = tangentVel / tLen;
+        float jt = -tLen / invMassSum;
+        float maxFriction = frictionCoeff * std::fabs(j);
+        if (std::fabs(jt) > maxFriction) {
+            jt = (jt > 0.0f) ? maxFriction : -maxFriction;
+        }
+        Vector3 frictionImpulse = tangentDir * jt;
+        a.velocity -= frictionImpulse * a.invMass;
+        b.velocity += frictionImpulse * b.invMass;
+    }
+}
+
+void ResolveOBBCollision(RigidBody& a,
+                        RigidBody& b,
+                        const Vector3& normal,
+                        float penetration,
+                        float restitution,
+                        float frictionCoeff)
+{
+    // 1) Positional correction to remove overlap
+    float invMassSum = a.invMass + b.invMass;
+    if (invMassSum > 0.0f) {
+        float correction = (penetration / invMassSum) * 0.5f;
+        a.position -= normal * (correction * a.invMass);
+        b.position += normal * (correction * b.invMass);
+    }
+
+    // 2) Relative velocity
+    Vector3 rv = b.velocity - a.velocity;
+    float velAlongNormal = rv.Dot(normal);
+
+    // If they're separating, no impulse
+    if (velAlongNormal > 0.0f) {
+        return;
+    }
+
+    // 3) Normal impulse
+    float e = restitution;
+    float j = -(1.0f + e) * velAlongNormal / invMassSum;
+    Vector3 impulse = normal * j;
+    a.velocity -= impulse * a.invMass;
+    b.velocity += impulse * b.invMass;
+
+    // 4) Friction impulse
+    rv = b.velocity - a.velocity;
+    float vn = rv.Dot(normal);
+    Vector3 tangentVel = rv - (vn * normal);
+    float tLen = tangentVel.Length();
+    if (tLen > 1e-6f) {
+        Vector3 tangentDir = tangentVel / tLen;
+        float jt = -tLen / invMassSum;
+        float maxFriction = frictionCoeff * std::fabs(j);
+        if (std::fabs(jt) > maxFriction) {
+            jt = (jt > 0.0f) ? maxFriction : -maxFriction;
+        }
+        Vector3 frictionImpulse = tangentDir * jt;
+        a.velocity -= frictionImpulse * a.invMass;
+        b.velocity += frictionImpulse * b.invMass;
+    }
+}
+
+void ResolveOBBAABBCollision(RigidBody& a,
+                            RigidBody& b,
+                            const Vector3& normal,
+                            float penetration,
+                            float restitution,
+                            float frictionCoeff)
+{
+    // 1) Positional correction to remove overlap
+    float invMassSum = a.invMass + b.invMass;
+    if (invMassSum > 0.0f) {
+        float correction = (penetration / invMassSum) * 0.5f;
+        a.position -= normal * (correction * a.invMass);
+        b.position += normal * (correction * b.invMass);
+    }
+
+    // 2) Relative velocity
+    Vector3 rv = b.velocity - a.velocity;
+    float velAlongNormal = rv.Dot(normal);
+
+    // If they're separating, no impulse
+    if (velAlongNormal > 0.0f) {
+        return;
+    }
+
+    // 3) Normal impulse
+    float e = restitution;
+    float j = -(1.0f + e) * velAlongNormal / invMassSum;
+    Vector3 impulse = normal * j;
+    a.velocity -= impulse * a.invMass;
+    b.velocity += impulse * b.invMass;
+
+    // 4) Friction impulse
+    rv = b.velocity - a.velocity;
+    float vn = rv.Dot(normal);
+    Vector3 tangentVel = rv - (vn * normal);
+    float tLen = tangentVel.Length();
+    if (tLen > 1e-6f) {
+        Vector3 tangentDir = tangentVel / tLen;
+        float jt = -tLen / invMassSum;
+        float maxFriction = frictionCoeff * std::fabs(j);
+        if (std::fabs(jt) > maxFriction) {
+            jt = (jt > 0.0f) ? maxFriction : -maxFriction;
+        }
+        Vector3 frictionImpulse = tangentDir * jt;
+        a.velocity -= frictionImpulse * a.invMass;
+        b.velocity += frictionImpulse * b.invMass;
+    }
+}
+
 } // namespace Collision

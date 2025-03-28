@@ -50,6 +50,13 @@ void UniformGridBroadPhase::Update(const std::vector<RigidBody*>& bodies) {
     }
 }
 
+// Helper function to check if two cells are close enough for potential collision
+bool AreNeighborCells(const GridCoord& a, const GridCoord& b) {
+    return std::abs(a.x - b.x) <= 1 &&
+           std::abs(a.y - b.y) <= 1 &&
+           std::abs(a.z - b.z) <= 1;
+}
+
 // Collects potential collision pairs by checking each cell and its neighbors.
 std::vector<std::pair<RigidBody*, RigidBody*>> 
 UniformGridBroadPhase::GetPotentialPairs() const {
@@ -57,30 +64,35 @@ UniformGridBroadPhase::GetPotentialPairs() const {
     // Reserve an arbitrary number to reduce reallocations.
     pairs.reserve(100);
 
-    // Iterate through each cell in the grid.
+    // Collect all occupied cells for easier iteration
+    std::vector<std::pair<GridCoord, const GridCell*>> occupiedCells;
     for (const auto& kv : grid) {
-        const GridCoord& cellCoord = kv.first;
-        const GridCell& cell = kv.second;
+        occupiedCells.push_back({kv.first, &kv.second});
+    }
 
-        // 1) Add pairs among objects in the same cell.
-        for (size_t i = 0; i < cell.bodies.size(); i++) {
-            for (size_t j = i + 1; j < cell.bodies.size(); j++) {
-                pairs.push_back({ cell.bodies[i], cell.bodies[j] });
+    // Compare each cell with every other cell
+    for (size_t i = 0; i < occupiedCells.size(); ++i) {
+        const GridCoord& coordA = occupiedCells[i].first;
+        const GridCell* cellA = occupiedCells[i].second;
+
+        // 1) Add pairs among objects in the same cell
+        for (size_t j = 0; j < cellA->bodies.size(); ++j) {
+            for (size_t k = j + 1; k < cellA->bodies.size(); ++k) {
+                pairs.push_back({cellA->bodies[j], cellA->bodies[k]});
             }
         }
 
-        // 2) Check neighbor cells (including diagonal neighbors).
-        std::vector<GridCoord> neighbors = GetNeighborCoords(cellCoord);
-        for (const GridCoord& neighborCoord : neighbors) {
-            // Skip the current cell; already processed.
-            if (neighborCoord == cellCoord) continue;
-            auto neighborIt = grid.find(neighborCoord);
-            if (neighborIt != grid.end()) {
-                const GridCell& neighborCell = neighborIt->second;
-                // Add pairs between objects in the current cell and the neighbor cell.
-                for (RigidBody* bodyA : cell.bodies) {
-                    for (RigidBody* bodyB : neighborCell.bodies) {
-                        pairs.push_back({ bodyA, bodyB });
+        // 2) Check with other cells
+        for (size_t j = i + 1; j < occupiedCells.size(); ++j) {
+            const GridCoord& coordB = occupiedCells[j].first;
+            const GridCell* cellB = occupiedCells[j].second;
+
+            // Only check cells that are immediate neighbors
+            if (AreNeighborCells(coordA, coordB)) {
+                // Add pairs between objects in cell A and cell B
+                for (RigidBody* bodyA : cellA->bodies) {
+                    for (RigidBody* bodyB : cellB->bodies) {
+                        pairs.push_back({bodyA, bodyB});
                     }
                 }
             }

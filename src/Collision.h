@@ -36,4 +36,52 @@ namespace Collision {
                              float restitution,
                              float frictionCoeff);
 
+    /**
+     * @brief Resolves an AABB-AABB collision via impulse, including friction.
+     * @param a            First RigidBody.
+     * @param b            Second RigidBody.
+     * @param normal       Collision normal from A to B.
+     * @param penetration  Depth of penetration (>0 means overlapping).
+     * @param restitution  Coefficient of restitution (bounciness) in [0..1].
+     * @param frictionCoeff Coulomb friction coefficient (e.g., 0.0 to 1.0).
+     */
+    void ResolveAABBCollision(RigidBody& a,
+                             RigidBody& b,
+                             const Vector3& normal,
+                             float penetration,
+                             float restitution,
+                             float frictionCoeff);
+
+    /**
+     * @brief Resolves an OBB-OBB collision via impulse, including friction.
+     * @param a            First RigidBody.
+     * @param b            Second RigidBody.
+     * @param normal       Collision normal from A to B.
+     * @param penetration  Depth of penetration (>0 means overlapping).
+     * @param restitution  Coefficient of restitution (bounciness) in [0..1].
+     * @param frictionCoeff Coulomb friction coefficient (e.g., 0.0 to 1.0).
+     */
+    void ResolveOBBCollision(RigidBody& a,
+                            RigidBody& b,
+                            const Vector3& normal,
+                            float penetration,
+                            float restitution,
+                            float frictionCoeff);
+
+    /**
+     * @brief Resolves an OBB-AABB collision via impulse, including friction.
+     * @param a            First RigidBody.
+     * @param b            Second RigidBody.
+     * @param normal       Collision normal from A to B.
+     * @param penetration  Depth of penetration (>0 means overlapping).
+     * @param restitution  Coefficient of restitution (bounciness) in [0..1].
+     * @param frictionCoeff Coulomb friction coefficient (e.g., 0.0 to 1.0).
+     */
+    void ResolveOBBAABBCollision(RigidBody& a,
+                                RigidBody& b,
+                                const Vector3& normal,
+                                float penetration,
+                                float restitution,
+                                float frictionCoeff);
+
 } // namespace Collision

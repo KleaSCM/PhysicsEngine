@@ -1,19 +1,51 @@
-# Ignore build artifacts and compiled binaries
-/build/
+# Build directories
+build/
+out/
+Debug/
+Release/
+
+# IDE specific files
+.vs/
+.vscode/
+*.user
+*.suo
+*.db
+*.opendb
+
+# Compiled Object files
+*.slo
+*.lo
 *.o
 *.obj
-*.exe
-*.out
-*.dll
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
 *.so
 *.dylib
+*.dll
 
-# Ignore CMake-generated files
-/CMakeLists.txt.user
-/CMakeCache.txt
-/CMakeFiles/
-Makefile
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
 cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps
 
 # Ignore editor/IDE-specific files
 .vscode/
