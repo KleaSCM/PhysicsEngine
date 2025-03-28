@@ -9,8 +9,8 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setClearColor(0x1a1a1a);
 
 // Camera setup
-camera.position.set(0, 10, 20);
-camera.lookAt(0, 0, 0);
+camera.position.set(0, 8, 15);
+camera.lookAt(0, 5, 0);
 
 // Lighting
 const ambientLight = new THREE.AmbientLight(0x404040);

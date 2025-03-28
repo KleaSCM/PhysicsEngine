@@ -28,15 +28,39 @@ app.whenReady().then(() => {
 
     // Create initial scene
     physicsEngine.CreatePlane({ x: 0, y: 1, z: 0 }, 0.0); // Ground plane
-    physicsEngine.CreateBox({ x: 0, y: 5, z: 0 }, { x: 1, y: 1, z: 1 }); // A box
-    physicsEngine.CreateSphere({ x: 2, y: 5, z: 0 }, 1.0); // A sphere
+    
+    // Create the rotating cube (static)
+    physicsEngine.CreateBox({ x: 0, y: 5, z: 0 }, { x: 2, y: 2, z: 2 });
+    
+    // Create the ball inside the cube (dynamic)
+    physicsEngine.CreateSphere({ x: 0, y: 5, z: 0 }, 0.5);
+    
+    // Set up the rotating cube constraint
+    physicsEngine.CreateHingeConstraint(
+        { x: 0, y: 5, z: 0 },  // Pivot point
+        { x: 0, y: 1, z: 0 },  // Axis
+        0.0,                    // Angular velocity (will be set in update loop)
+        true                    // Is rotating
+    );
 
     // Start physics update loop
     let lastTime = Date.now();
+    let rotationAngle = 0.0;
+    const rotationSpeed = 1.0; // radians per second
+
     function updatePhysics() {
         const currentTime = Date.now();
         const deltaTime = (currentTime - lastTime) / 1000.0; // Convert to seconds
         lastTime = currentTime;
+
+        // Update rotation angle
+        rotationAngle += rotationSpeed * deltaTime;
+        if (rotationAngle > 2 * Math.PI) {
+            rotationAngle -= 2 * Math.PI;
+        }
+
+        // Apply rotation to the cube
+        physicsEngine.SetHingeConstraintRotation(0, rotationAngle);
 
         physicsEngine.Update(deltaTime);
 
@@ -94,8 +118,8 @@ ipcMain.on('reset-scene', () => {
     physicsEngine.ResetScene();
     // Recreate initial scene
     physicsEngine.CreatePlane({ x: 0, y: 1, z: 0 }, 0.0);
-    physicsEngine.CreateBox({ x: 0, y: 5, z: 0 }, { x: 1, y: 1, z: 1 });
-    physicsEngine.CreateSphere({ x: 2, y: 5, z: 0 }, 1.0);
+    physicsEngine.CreateBox({ x: 0, y: 5, z: 0 }, { x: 2, y: 2, z: 2 });
+    physicsEngine.CreateSphere({ x: 0, y: 5, z: 0 }, 0.5);
 });
 
 ipcMain.on('add-box', () => {
