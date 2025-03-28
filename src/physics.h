@@ -4,6 +4,7 @@
 #include "RigidBody.h"
 #include "Timer.h"
 #include "MathUtils.h"
+#include "Constraints.h"
 #include <string>
 #include <vector>
 #include <memory>
@@ -73,6 +74,10 @@ public:
     RigidBody* CreateSphere(const Vector3& position, float radius, float mass = 1.0f);
     RigidBody* CreatePlane(const Vector3& normal, float distance, float mass = 0.0f);
     
+    // Constraints
+    HingeConstraint* CreateHingeConstraint(const Vector3& pivot, const Vector3& axis, float angularVelocity = 0.0f, bool isRotating = false);
+    void SetHingeConstraintRotation(int constraintId, float angle);
+    
     // Set global physics properties
     void SetGravity(const Vector3& gravity);
     void SetTimeStep(float timeStep);
@@ -119,6 +124,7 @@ private:
     Settings settings;
     Timer simulationTimer;
     std::vector<RigidBody*> managedBodies;  // Bodies created by the engine
+    std::vector<HingeConstraint*> managedConstraints;  // Constraints created by the engine
     DebugDrawData debugDrawData;
     bool webServerRunning;
 

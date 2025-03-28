@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include "RigidBody.h"
+#include "Constraints.h"
 
 namespace Physics {
 
@@ -11,6 +12,7 @@ namespace Physics {
 class PhysicsWorld {
 public:
     std::vector<RigidBody*> bodies;  ///< List of bodies in the simulation.
+    std::vector<Constraint*> constraints;  ///< List of constraints in the simulation.
     float fixedDeltaTime = 1.0f / 60.0f; ///< Fixed timestep (default: 1/60 seconds).
 
     /**
@@ -18,6 +20,12 @@ public:
      * @param body Pointer to the RigidBody to add.
      */
     void AddBody(RigidBody* body);
+
+    /**
+     * @brief Adds a Constraint to the simulation.
+     * @param constraint Pointer to the Constraint to add.
+     */
+    void AddConstraint(Constraint* constraint);
 
     /**
      * @brief Advances the simulation by one fixed timestep.
@@ -31,7 +39,7 @@ public:
     void ApplyGlobalForce(const Vector3& force);
 
     /**
-     * @brief Clears all bodies from the simulation.
+     * @brief Clears all bodies and constraints from the simulation.
      */
     void Clear();
 };

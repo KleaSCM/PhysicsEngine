@@ -13,6 +13,8 @@ public:
             InstanceMethod("createBox", &PhysicsWrapper::CreateBox),
             InstanceMethod("createSphere", &PhysicsWrapper::CreateSphere),
             InstanceMethod("createPlane", &PhysicsWrapper::CreatePlane),
+            InstanceMethod("createHingeConstraint", &PhysicsWrapper::CreateHingeConstraint),
+            InstanceMethod("setHingeConstraintRotation", &PhysicsWrapper::SetHingeConstraintRotation),
             InstanceMethod("toggleDebugDraw", &PhysicsWrapper::ToggleDebugDraw),
             InstanceMethod("toggleColliders", &PhysicsWrapper::ToggleColliders),
             InstanceMethod("toggleGrid", &PhysicsWrapper::ToggleGrid),
@@ -100,6 +102,35 @@ private:
 
         RigidBody* body = engine->CreatePlane(planeNormal, distance, mass);
         return Napi::Number::New(info.Env(), reinterpret_cast<uintptr_t>(body));
+    }
+
+    Napi::Value CreateHingeConstraint(const Napi::CallbackInfo& info) {
+        Napi::Object pivot = info[0].As<Napi::Object>();
+        Napi::Object axis = info[1].As<Napi::Object>();
+        float angularVelocity = info[2].As<Napi::Number>().FloatValue();
+        bool isRotating = info[3].As<Napi::Boolean>().Value();
+
+        Vector3 pivotPoint(
+            pivot.Get("x").As<Napi::Number>().FloatValue(),
+            pivot.Get("y").As<Napi::Number>().FloatValue(),
+            pivot.Get("z").As<Napi::Number>().FloatValue()
+        );
+
+        Vector3 rotationAxis(
+            axis.Get("x").As<Napi::Number>().FloatValue(),
+            axis.Get("y").As<Napi::Number>().FloatValue(),
+            axis.Get("z").As<Napi::Number>().FloatValue()
+        );
+
+        HingeConstraint* constraint = engine->CreateHingeConstraint(pivotPoint, rotationAxis, angularVelocity, isRotating);
+        return Napi::Number::New(info.Env(), reinterpret_cast<uintptr_t>(constraint));
+    }
+
+    Napi::Value SetHingeConstraintRotation(const Napi::CallbackInfo& info) {
+        int constraintId = info[0].As<Napi::Number>().Int32Value();
+        float angle = info[1].As<Napi::Number>().FloatValue();
+        engine->SetHingeConstraintRotation(constraintId, angle);
+        return info.Env().Undefined();
     }
 
     Napi::Value ToggleDebugDraw(const Napi::CallbackInfo& info) {

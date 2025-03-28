@@ -23,6 +23,12 @@ Engine::~Engine() {
     }
     managedBodies.clear();
     
+    // Clean up managed constraints
+    for (HingeConstraint* constraint : managedConstraints) {
+        delete constraint;
+    }
+    managedConstraints.clear();
+    
     // Stop web server if running
     if (webServerRunning) {
         StopWebServer();
@@ -326,6 +332,19 @@ void Engine::ResetScene() {
     
     // Reset to default settings
     settings = Settings();
+}
+
+HingeConstraint* Engine::CreateHingeConstraint(const Vector3& pivot, const Vector3& axis, float angularVelocity, bool isRotating) {
+    HingeConstraint* constraint = new HingeConstraint(pivot, axis, angularVelocity, isRotating);
+    managedConstraints.push_back(constraint);
+    world.AddConstraint(constraint);
+    return constraint;
+}
+
+void Engine::SetHingeConstraintRotation(int constraintId, float angle) {
+    if (constraintId >= 0 && constraintId < managedConstraints.size()) {
+        managedConstraints[constraintId]->SetRotation(angle);
+    }
 }
 
 } // namespace Physics

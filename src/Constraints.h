@@ -37,9 +37,12 @@ public:
     HingeConstraint(RigidBody* bodyA, RigidBody* bodyB,
                    const Vector3& pivotA, const Vector3& pivotB,
                    const Vector3& axisA, const Vector3& axisB);
+    // New constructor for single body hinge (e.g., door hinge)
+    HingeConstraint(const Vector3& pivot, const Vector3& axis, float angularVelocity = 0.0f, bool isRotating = false);
     void Solve(float dt) override;
     void PreSolve(float dt) override;
     void PostSolve() override;
+    void SetRotation(float angle);
 
 private:
     RigidBody* bodyA;
@@ -52,6 +55,10 @@ private:
     Vector3 rB;
     Vector3 worldAxisA;
     Vector3 worldAxisB;
+    float targetAngle;  // Target rotation angle
+    float currentAngle; // Current rotation angle
+    float angularVelocity; // Angular velocity for rotating hinges
+    bool isRotating;    // Whether this is a rotating hinge
 };
 
 // Slider constraint (prismatic joint)
