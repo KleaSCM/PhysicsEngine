@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://unpkg.com; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline';">
-    <title>Physics Engine Visualization</title>
+    <title>Physics Engine</title>
     <style>
         body {
             margin: 0;
@@ -54,7 +54,10 @@
     </style>
 </head>
 <body>
-    <canvas id="canvas"></canvas>
+    <div id="canvas-container">
+        <canvas id="canvas"></canvas>
+    </div>
+    <script type="module" src="renderer.js"></script>
     <div id="controls">
         <h3>Controls</h3>
         <button id="toggleDebug">Toggle Debug</button>
@@ -70,6 +73,5 @@
         <div id="bodies">Bodies: 0</div>
         <div id="timeStep">Time Step: 0</div>
     </div>
-    <script type="module" src="renderer.js"></script>
 </body>
 </html>
