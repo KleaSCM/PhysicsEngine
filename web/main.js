@@ -1,6 +1,5 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
-const path = require('path');
-const { startServer } = require('./server');
+import { app, BrowserWindow, ipcMain } from 'electron';
+import { startServer } from './server.js';
 
 // Enable debug logging
 const DEBUG = true;
@@ -27,8 +26,11 @@ function createWindow() {
 
     // Start web server
     webServer = startServer(8080);
+    log('Web server started on port 8080');
 
     mainWindow.loadURL('http://localhost:8080');
+    log('Loading URL: http://localhost:8080');
+
     mainWindow.webContents.openDevTools(); // Always open DevTools for debugging
 
     mainWindow.webContents.on('did-finish-load', () => {
@@ -161,6 +163,7 @@ app.on('before-quit', () => {
     log('App quitting, cleaning up...');
     if (webServer) {
         webServer.close();
+        log('Web server stopped');
     }
 });
 
