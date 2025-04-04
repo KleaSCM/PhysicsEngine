@@ -6,12 +6,21 @@
   "type": "module",
   "scripts": {
     "start": "electron .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "electron:dev": "vite --mode electron",
+    "electron:build": "vite build --mode electron && electron-builder"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "electron": "^28.0.0",
     "three": "^0.160.0"
+  },
+  "devDependencies": {
+    "vite": "^6.2.5",
+    "vite-plugin-electron": "^0.29.0",
+    "electron-builder": "^24.9.1"
   }
-} 
+}

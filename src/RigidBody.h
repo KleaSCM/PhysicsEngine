@@ -11,6 +11,10 @@ enum class CollisionShape {
     OBB
 };
 
+// Add comparison operators for CollisionShape
+inline bool operator==(CollisionShape a, CollisionShape b) { return static_cast<int>(a) == static_cast<int>(b); }
+inline bool operator!=(CollisionShape a, CollisionShape b) { return static_cast<int>(a) != static_cast<int>(b); }
+
 /**
  * @class RigidBody
  * @brief Represents a physical object in the simulation.

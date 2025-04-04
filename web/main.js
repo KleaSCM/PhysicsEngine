@@ -1,5 +1,11 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import { startServer } from './server.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const require = createRequire(import.meta.url);
 
 // Enable debug logging
 const DEBUG = true;
@@ -19,8 +25,9 @@ function createWindow() {
         width: 1200,
         height: 800,
         webPreferences: {
-            nodeIntegration: true,
-            contextIsolation: false
+            nodeIntegration: false,
+            contextIsolation: true,
+            preload: path.join(__dirname, 'preload.js')
         }
     });
 
@@ -28,10 +35,14 @@ function createWindow() {
     webServer = startServer(8080);
     log('Web server started on port 8080');
 
-    mainWindow.loadURL('http://localhost:8080');
-    log('Loading URL: http://localhost:8080');
-
-    mainWindow.webContents.openDevTools(); // Always open DevTools for debugging
+    // In development, load from Vite dev server
+    if (process.env.NODE_ENV === 'development') {
+        mainWindow.loadURL('http://localhost:3000');
+        mainWindow.webContents.openDevTools();
+    } else {
+        // In production, load from the built files
+        mainWindow.loadFile(path.join(__dirname, 'dist', 'index.html'));
+    }
 
     mainWindow.webContents.on('did-finish-load', () => {
         log('Window loaded successfully');
@@ -99,7 +110,9 @@ app.whenReady().then(() => {
                 const bodyCount = physicsEngine.getBodyCount();
                 for (let i = 0; i < bodyCount; i++) {
                     const body = physicsEngine.getWorld().getBody(i);
-                    bodies.push({
+                    const bodyData = {
+                        id: i,
+                        type: body.shape === 'box' ? 'box' : 'sphere',
                         position: {
                             x: body.position.x,
                             y: body.position.y,
@@ -111,7 +124,20 @@ app.whenReady().then(() => {
                             z: body.rotation.z,
                             w: body.rotation.w
                         }
-                    });
+                    };
+                    
+                    // Add size or radius based on body type
+                    if (body.shape === 'box') {
+                        bodyData.size = {
+                            x: body.halfExtents.x * 2,
+                            y: body.halfExtents.y * 2,
+                            z: body.halfExtents.z * 2
+                        };
+                    } else {
+                        bodyData.radius = body.radius;
+                    }
+                    
+                    bodies.push(bodyData);
                 }
 
                 const debugData = physicsEngine.getDebugDrawData();

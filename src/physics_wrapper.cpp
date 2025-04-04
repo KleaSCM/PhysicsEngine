@@ -37,7 +37,39 @@ private:
     Napi::Value GetBody(const Napi::CallbackInfo& info) {
         int index = info[0].As<Napi::Number>().Int32Value();
         if (index >= 0 && index < world->bodies.size()) {
-            return Napi::Number::New(info.Env(), reinterpret_cast<uintptr_t>(world->bodies[index]));
+            RigidBody* body = world->bodies[index];
+            Napi::Object result = Napi::Object::New(info.Env());
+            
+            // Add position
+            Napi::Object position = Napi::Object::New(info.Env());
+            position.Set("x", body->position.x);
+            position.Set("y", body->position.y);
+            position.Set("z", body->position.z);
+            result.Set("position", position);
+            
+            // Add rotation
+            Napi::Object rotation = Napi::Object::New(info.Env());
+            rotation.Set("x", body->rotation.x);
+            rotation.Set("y", body->rotation.y);
+            rotation.Set("z", body->rotation.z);
+            rotation.Set("w", body->rotation.w);
+            result.Set("rotation", rotation);
+            
+            // Add shape information
+            result.Set("shape", static_cast<int>(body->shape));
+            
+            // Add dimensions based on shape
+            if (body->shape == CollisionShape::AABB) {
+                Napi::Object halfExtents = Napi::Object::New(info.Env());
+                halfExtents.Set("x", body->halfExtents.x);
+                halfExtents.Set("y", body->halfExtents.y);
+                halfExtents.Set("z", body->halfExtents.z);
+                result.Set("halfExtents", halfExtents);
+            } else if (body->shape == CollisionShape::Sphere) {
+                result.Set("radius", body->radius);
+            }
+            
+            return result;
         }
         return info.Env().Null();
     }

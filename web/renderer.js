@@ -1,5 +1,5 @@
-import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
-import { OrbitControls } from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 // Debug logging
 const DEBUG = true;
@@ -77,43 +77,47 @@ window.addEventListener('resize', () => {
 });
 
 // Handle physics updates
-window.electronAPI.on('physics-update', (event, data) => {
-    try {
-        // Update stats
-        document.getElementById('fps').textContent = `FPS: ${data.fps.toFixed(1)}`;
-        document.getElementById('bodies').textContent = `Bodies: ${data.bodies.length}`;
-        document.getElementById('timeStep').textContent = `Time Step: ${data.timeStep.toFixed(4)}`;
+if (window.electronAPI) {
+    window.electronAPI.on('physics-update', (event, data) => {
+        try {
+            // Update stats
+            document.getElementById('fps').textContent = `FPS: ${data.fps.toFixed(1)}`;
+            document.getElementById('bodies').textContent = `Bodies: ${data.bodies.length}`;
+            document.getElementById('timeStep').textContent = `Time Step: ${data.timeStep.toFixed(4)}`;
 
-        // Update or create meshes for each physics body
-        data.bodies.forEach(body => {
-            let mesh = meshes.get(body.id);
-            if (!mesh) {
-                mesh = createMesh(body);
+            // Update or create meshes for each physics body
+            data.bodies.forEach(body => {
+                let mesh = meshes.get(body.id);
+                if (!mesh) {
+                    mesh = createMesh(body);
+                    if (mesh) {
+                        scene.add(mesh);
+                        meshes.set(body.id, mesh);
+                    }
+                }
                 if (mesh) {
-                    scene.add(mesh);
-                    meshes.set(body.id, mesh);
+                    updateMesh(mesh, body);
+                }
+            });
+
+            // Remove meshes for bodies that no longer exist
+            const currentIds = new Set(data.bodies.map(b => b.id));
+            for (const [id, mesh] of meshes) {
+                if (!currentIds.has(id)) {
+                    scene.remove(mesh);
+                    meshes.delete(id);
                 }
             }
-            if (mesh) {
-                updateMesh(mesh, body);
-            }
-        });
 
-        // Remove meshes for bodies that no longer exist
-        const currentIds = new Set(data.bodies.map(b => b.id));
-        for (const [id, mesh] of meshes) {
-            if (!currentIds.has(id)) {
-                scene.remove(mesh);
-                meshes.delete(id);
-            }
+            // Update debug visualization
+            updateDebugVisualization(data.debugData);
+        } catch (error) {
+            log('Error in physics update:', error);
         }
-
-        // Update debug visualization
-        updateDebugVisualization(data.debugData);
-    } catch (error) {
-        log('Error in physics update:', error);
-    }
-});
+    });
+} else {
+    log('electronAPI not available - running in browser mode');
+}
 
 // Debug visualization
 const debugLines = new THREE.LineSegments(
@@ -194,16 +198,5 @@ document.getElementById('addBox').addEventListener('click', () => {
 document.getElementById('addSphere').addEventListener('click', () => {
     window.electronAPI.addSphere();
 });
-
-// Example of using the exposed electronAPI
-window.electronAPI.sendMessage('Hello from renderer!');
-
-// Listen for messages from main process
-window.electronAPI.onMessage((event, message) => {
-    console.log('Received from main process:', message);
-});
-
-// Clean up listener when needed
-// window.electronAPI.removeMessageListener(callback);
 
 log('Renderer initialized');
