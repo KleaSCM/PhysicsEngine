@@ -3,6 +3,46 @@
 
 namespace Physics {
 
+// Wrapper class for the Physics World
+class WorldWrapper : public Napi::ObjectWrap<WorldWrapper> {
+public:
+    static Napi::Object Init(Napi::Env env, Napi::Object exports) {
+        Napi::Function func = DefineClass(env, "World", {
+            InstanceMethod("getBodyCount", &WorldWrapper::GetBodyCount),
+            InstanceMethod("getBody", &WorldWrapper::GetBody)
+        });
+
+        Napi::FunctionReference* constructor = new Napi::FunctionReference();
+        *constructor = Napi::Persistent(func);
+        env.SetInstanceData(constructor);
+        exports.Set("World", func);
+        return exports;
+    }
+
+    WorldWrapper(const Napi::CallbackInfo& info) : Napi::ObjectWrap<WorldWrapper>(info) {
+        world = nullptr;
+    }
+
+    void SetWorld(PhysicsWorld* w) {
+        world = w;
+    }
+
+private:
+    PhysicsWorld* world;
+
+    Napi::Value GetBodyCount(const Napi::CallbackInfo& info) {
+        return Napi::Number::New(info.Env(), static_cast<double>(world->bodies.size()));
+    }
+
+    Napi::Value GetBody(const Napi::CallbackInfo& info) {
+        int index = info[0].As<Napi::Number>().Int32Value();
+        if (index >= 0 && index < world->bodies.size()) {
+            return Napi::Number::New(info.Env(), reinterpret_cast<uintptr_t>(world->bodies[index]));
+        }
+        return info.Env().Null();
+    }
+};
+
 // Wrapper class for the Physics Engine
 class PhysicsWrapper : public Napi::ObjectWrap<PhysicsWrapper> {
 public:
@@ -21,7 +61,8 @@ public:
             InstanceMethod("resetScene", &PhysicsWrapper::ResetScene),
             InstanceMethod("getDebugDrawData", &PhysicsWrapper::GetDebugDrawData),
             InstanceMethod("getAverageFPS", &PhysicsWrapper::GetAverageFPS),
-            InstanceMethod("getWorld", &PhysicsWrapper::GetWorld)
+            InstanceMethod("getWorld", &PhysicsWrapper::GetWorld),
+            InstanceMethod("getBodyCount", &PhysicsWrapper::GetBodyCount)
         });
 
         Napi::FunctionReference* constructor = new Napi::FunctionReference();
@@ -216,11 +257,21 @@ private:
     }
 
     Napi::Value GetWorld(const Napi::CallbackInfo& info) {
-        return Napi::Number::New(info.Env(), reinterpret_cast<uintptr_t>(engine->GetWorld()));
+        PhysicsWorld* world = engine->GetWorld();
+        Napi::Object worldObj = WorldWrapper::Init(info.Env(), Napi::Object::New(info.Env())).Get("World").As<Napi::Function>().New({});
+        WorldWrapper* wrapper = Napi::ObjectWrap<WorldWrapper>::Unwrap(worldObj);
+        wrapper->SetWorld(world);
+        return worldObj;
+    }
+
+    Napi::Value GetBodyCount(const Napi::CallbackInfo& info) {
+        PhysicsWorld* world = engine->GetWorld();
+        return Napi::Number::New(info.Env(), static_cast<double>(world->bodies.size()));
     }
 };
 
 Napi::Object Init(Napi::Env env, Napi::Object exports) {
+    WorldWrapper::Init(env, exports);
     return PhysicsWrapper::Init(env, exports);
 }
 

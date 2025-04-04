@@ -1,3 +1,3 @@
-const addon = require('./build/Release/physics.node');
+import addon from './build/Release/physics.node';
 
-module.exports = addon; 
+export default addon; 

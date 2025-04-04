@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
+const { startServer } = require('./server');
 
 // Enable debug logging
 const DEBUG = true;
@@ -11,6 +12,7 @@ function log(...args) {
 
 let mainWindow;
 let physicsEngine;
+let webServer;
 
 function createWindow() {
     log('Creating main window...');
@@ -23,7 +25,10 @@ function createWindow() {
         }
     });
 
-    mainWindow.loadFile('index.html');
+    // Start web server
+    webServer = startServer(8080);
+
+    mainWindow.loadURL('http://localhost:8080');
     mainWindow.webContents.openDevTools(); // Always open DevTools for debugging
 
     mainWindow.webContents.on('did-finish-load', () => {
@@ -72,30 +77,46 @@ app.whenReady().then(() => {
         // Start physics update loop
         let lastTime = Date.now();
         let rotationAngle = 0.0;
-        const rotationSpeed = 1.0; // radians per second
+        const rotationSpeed = 1.0;
 
         function updatePhysics() {
             try {
                 const currentTime = Date.now();
-                const deltaTime = (currentTime - lastTime) / 1000.0; // Convert to seconds
+                const deltaTime = (currentTime - lastTime) / 1000.0;
                 lastTime = currentTime;
+
+                // Update physics
+                physicsEngine.update(deltaTime);
 
                 // Update rotation angle
                 rotationAngle += rotationSpeed * deltaTime;
-                if (rotationAngle > 2 * Math.PI) {
-                    rotationAngle -= 2 * Math.PI;
-                }
-
-                // Apply rotation to the cube
                 physicsEngine.setHingeConstraintRotation(0, rotationAngle);
 
-                physicsEngine.update(deltaTime);
+                // Get physics data
+                const bodies = [];
+                const bodyCount = physicsEngine.getBodyCount();
+                for (let i = 0; i < bodyCount; i++) {
+                    const body = physicsEngine.getWorld().getBody(i);
+                    bodies.push({
+                        position: {
+                            x: body.position.x,
+                            y: body.position.y,
+                            z: body.position.z
+                        },
+                        rotation: {
+                            x: body.rotation.x,
+                            y: body.rotation.y,
+                            z: body.rotation.z,
+                            w: body.rotation.w
+                        }
+                    });
+                }
 
-                // Send physics data to renderer
                 const debugData = physicsEngine.getDebugDrawData();
+
                 mainWindow.webContents.send('physics-update', {
                     fps: physicsEngine.getAverageFPS(),
-                    bodies: physicsEngine.getWorld().getBodyCount(),
+                    bodies: bodies,
                     timeStep: physicsEngine.getSettings().fixedTimeStep,
                     debugData: {
                         lines: debugData.lines.map(line => ({
@@ -110,16 +131,22 @@ app.whenReady().then(() => {
                         }))
                     }
                 });
-
-                requestAnimationFrame(updatePhysics);
             } catch (error) {
                 log('Error in physics update:', error);
             }
         }
-        updatePhysics();
+        // Use setInterval instead of requestAnimationFrame
+        setInterval(updatePhysics, 16); // ~60 FPS
     } catch (error) {
         log('Failed to initialize physics engine:', error);
         mainWindow.webContents.send('physics-error', error.message);
+    }
+});
+
+app.on('activate', () => {
+    log('App activated');
+    if (BrowserWindow.getAllWindows().length === 0) {
+        createWindow();
     }
 });
 
@@ -130,10 +157,10 @@ app.on('window-all-closed', () => {
     }
 });
 
-app.on('activate', () => {
-    log('App activated');
-    if (BrowserWindow.getAllWindows().length === 0) {
-        createWindow();
+app.on('before-quit', () => {
+    log('App quitting, cleaning up...');
+    if (webServer) {
+        webServer.close();
     }
 });
 

@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdnjs.cloudflare.com; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline';">
     <title>Physics Engine Visualization</title>
     <style>
         body {
@@ -68,6 +70,6 @@
         <div id="bodies">Bodies: 0</div>
         <div id="timeStep">Time Step: 0</div>
     </div>
-    <script src="renderer.js"></script>
+    <script type="module" src="renderer.js"></script>
 </body>
 </html>

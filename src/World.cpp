@@ -10,6 +10,10 @@ void PhysicsWorld::AddBody(RigidBody* body) {
     bodies.push_back(body);
 }
 
+void PhysicsWorld::AddConstraint(Constraint* constraint) {
+    constraints.push_back(constraint);
+}
+
 void PhysicsWorld::Step() {
     // 1) Apply gravity to all bodies.
     Vector3 gravity(0.0f, -9.8f, 0.0f);

@@ -1,8 +1,9 @@
 {
-  "name": "physics-engine-visualization",
+  "name": "physics-engine-web",
   "version": "1.0.0",
-  "description": "3D visualization of the physics engine",
+  "description": "Web visualization for physics engine",
   "main": "main.js",
+  "type": "module",
   "scripts": {
     "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1"

@@ -9,7 +9,8 @@
       "src/Collision.cpp",
       "src/UniformGridBroadPhase.cpp",
       "src/MathUtils.cpp",
-      "src/Timer.cpp"
+      "src/Timer.cpp",
+      "src/Constraints.cpp"
     ],
     "include_dirs": [
       "<!@(node -p \"require('node-addon-api').include\")",

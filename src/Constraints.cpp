@@ -56,6 +56,12 @@ HingeConstraint::HingeConstraint(RigidBody* bodyA, RigidBody* bodyB,
       axisA(axisA), axisB(axisB) {
 }
 
+HingeConstraint::HingeConstraint(const Vector3& pivot, const Vector3& axis, float angularVelocity, bool isRotating)
+    : bodyA(nullptr), bodyB(nullptr), pivotA(pivot), pivotB(pivot),
+      axisA(axis), axisB(axis), targetAngle(0.0f), currentAngle(0.0f),
+      angularVelocity(angularVelocity), isRotating(isRotating) {
+}
+
 void HingeConstraint::PreSolve(float dt) {
     // Convert local pivot points and axes to world space
     Matrix3 rotA = bodyA->rotation.ToMatrix();
@@ -106,6 +112,10 @@ void HingeConstraint::Solve(float dt) {
 
 void HingeConstraint::PostSolve() {
     // Nothing to do here
+}
+
+void HingeConstraint::SetRotation(float angle) {
+    targetAngle = angle;
 }
 
 // Slider constraint implementation

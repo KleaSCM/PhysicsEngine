@@ -1,199 +1,209 @@
-const { ipcRenderer } = require('electron');
-const THREE = require('three');
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
-// Enable debug logging
+// Debug logging
 const DEBUG = true;
 function log(...args) {
     if (DEBUG) {
-        console.log('[Renderer Process]:', ...args);
+        console.log('[Renderer]:', ...args);
     }
 }
 
-// Three.js setup
-log('Initializing Three.js...');
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true });
+// Initialize Three.js
+const canvas = document.getElementById('canvas');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setClearColor(0x1a1a1a);
-log('Three.js initialized successfully');
 
-// Camera setup
-camera.position.set(0, 8, 15);
-camera.lookAt(0, 5, 0);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.set(0, 10, 20);
+camera.lookAt(0, 0, 0);
+
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true;
+controls.dampingFactor = 0.05;
 
 // Lighting
-log('Setting up lighting...');
 const ambientLight = new THREE.AmbientLight(0x404040);
 scene.add(ambientLight);
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-directionalLight.position.set(1, 1, 1);
-scene.add(directionalLight);
-log('Lighting setup complete');
 
-// Debug visualization
-const debugGroup = new THREE.Group();
-scene.add(debugGroup);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+directionalLight.position.set(5, 10, 7.5);
+directionalLight.castShadow = true;
+directionalLight.shadow.mapSize.width = 2048;
+directionalLight.shadow.mapSize.height = 2048;
+scene.add(directionalLight);
+
+// Physics objects
+const meshes = new Map(); // Store meshes by physics ID
+
+// Create a mesh for a physics body
+function createMesh(body) {
+    let geometry, material;
+    
+    if (body.type === 'box') {
+        geometry = new THREE.BoxGeometry(body.size.x, body.size.y, body.size.z);
+        material = new THREE.MeshStandardMaterial({
+            color: 0x00ffff,
+            transparent: true,
+            opacity: 0.2,
+            side: THREE.DoubleSide
+        });
+    } else if (body.type === 'sphere') {
+        geometry = new THREE.SphereGeometry(body.radius, 32, 32);
+        material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+    } else {
+        return null;
+    }
+
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    return mesh;
+}
+
+// Update mesh position and rotation
+function updateMesh(mesh, body) {
+    mesh.position.set(body.position.x, body.position.y, body.position.z);
+    mesh.quaternion.set(body.rotation.x, body.rotation.y, body.rotation.z, body.rotation.w);
+}
 
 // Handle window resize
 window.addEventListener('resize', () => {
-    log('Window resize detected');
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-// Handle mouse controls
-let isDragging = false;
-let previousMousePosition = { x: 0, y: 0 };
-
-document.addEventListener('mousedown', (event) => {
-    isDragging = true;
-    previousMousePosition = {
-        x: event.clientX,
-        y: event.clientY
-    };
-});
-
-document.addEventListener('mousemove', (event) => {
-    if (!isDragging) return;
-
-    const deltaMove = {
-        x: event.clientX - previousMousePosition.x,
-        y: event.clientY - previousMousePosition.y
-    };
-
-    // Rotate camera around target
-    const distance = camera.position.length();
-    const target = new THREE.Vector3(0, 0, 0);
-    
-    camera.position.x = target.x + distance * Math.sin(camera.rotation.y) * Math.cos(camera.rotation.x);
-    camera.position.y = target.y + distance * Math.sin(camera.rotation.x);
-    camera.position.z = target.z + distance * Math.cos(camera.rotation.y) * Math.cos(camera.rotation.x);
-    
-    camera.rotation.y -= deltaMove.x * 0.01;
-    camera.rotation.x -= deltaMove.y * 0.01;
-    camera.rotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, camera.rotation.x));
-    
-    camera.lookAt(target);
-
-    previousMousePosition = {
-        x: event.clientX,
-        y: event.clientY
-    };
-});
-
-document.addEventListener('mouseup', () => {
-    isDragging = false;
-});
-
-// Handle wheel zoom
-document.addEventListener('wheel', (event) => {
-    const distance = camera.position.length();
-    const target = new THREE.Vector3(0, 0, 0);
-    
-    const newDistance = Math.max(5, Math.min(50, distance + event.deltaY * 0.1));
-    const ratio = newDistance / distance;
-    
-    camera.position.sub(target).multiplyScalar(ratio).add(target);
-});
-
-// UI Controls
-log('Setting up UI controls...');
-document.getElementById('toggleDebug').addEventListener('click', () => {
-    log('Toggle debug button clicked');
-    ipcRenderer.send('toggle-debug');
-});
-
-document.getElementById('toggleColliders').addEventListener('click', () => {
-    log('Toggle colliders button clicked');
-    ipcRenderer.send('toggle-colliders');
-});
-
-document.getElementById('toggleGrid').addEventListener('click', () => {
-    log('Toggle grid button clicked');
-    ipcRenderer.send('toggle-grid');
-});
-
-document.getElementById('resetScene').addEventListener('click', () => {
-    log('Reset scene button clicked');
-    ipcRenderer.send('reset-scene');
-});
-
-document.getElementById('addBox').addEventListener('click', () => {
-    log('Add box button clicked');
-    ipcRenderer.send('add-box');
-});
-
-document.getElementById('addSphere').addEventListener('click', () => {
-    log('Add sphere button clicked');
-    ipcRenderer.send('add-sphere');
-});
-log('UI controls setup complete');
-
-// Handle physics updates from main process
-ipcRenderer.on('physics-update', (event, data) => {
+// Handle physics updates
+window.electronAPI.on('physics-update', (event, data) => {
     try {
         // Update stats
         document.getElementById('fps').textContent = `FPS: ${data.fps.toFixed(1)}`;
-        document.getElementById('bodies').textContent = `Bodies: ${data.bodies}`;
-        document.getElementById('timeStep').textContent = `Time Step: ${data.timeStep.toFixed(3)}`;
+        document.getElementById('bodies').textContent = `Bodies: ${data.bodies.length}`;
+        document.getElementById('timeStep').textContent = `Time Step: ${data.timeStep.toFixed(4)}`;
+
+        // Update or create meshes for each physics body
+        data.bodies.forEach(body => {
+            let mesh = meshes.get(body.id);
+            if (!mesh) {
+                mesh = createMesh(body);
+                if (mesh) {
+                    scene.add(mesh);
+                    meshes.set(body.id, mesh);
+                }
+            }
+            if (mesh) {
+                updateMesh(mesh, body);
+            }
+        });
+
+        // Remove meshes for bodies that no longer exist
+        const currentIds = new Set(data.bodies.map(b => b.id));
+        for (const [id, mesh] of meshes) {
+            if (!currentIds.has(id)) {
+                scene.remove(mesh);
+                meshes.delete(id);
+            }
+        }
 
         // Update debug visualization
         updateDebugVisualization(data.debugData);
     } catch (error) {
-        log('Error handling physics update:', error);
+        log('Error in physics update:', error);
     }
 });
 
-// Handle physics errors from main process
-ipcRenderer.on('physics-error', (event, errorMessage) => {
-    log('Physics error received:', errorMessage);
-    // You might want to display this error to the user in the UI
-});
+// Debug visualization
+const debugLines = new THREE.LineSegments(
+    new THREE.BufferGeometry(),
+    new THREE.LineBasicMaterial({ vertexColors: true })
+);
+scene.add(debugLines);
 
-// Update debug visualization
-function updateDebugVisualization(debugData) {
-    try {
-        // Clear previous debug objects
-        while (debugGroup.children.length > 0) {
-            debugGroup.remove(debugGroup.children[0]);
-        }
+const debugPoints = new THREE.Points(
+    new THREE.BufferGeometry(),
+    new THREE.PointsMaterial({ vertexColors: true, size: 0.1 })
+);
+scene.add(debugPoints);
 
-        // Draw lines
-        debugData.lines.forEach(line => {
-            const geometry = new THREE.BufferGeometry().setFromPoints([
-                new THREE.Vector3(line.start.x, line.start.y, line.start.z),
-                new THREE.Vector3(line.end.x, line.end.y, line.end.z)
-            ]);
-            const material = new THREE.LineBasicMaterial({ color: new THREE.Color(line.color.x, line.color.y, line.color.z) });
-            const lineObject = new THREE.Line(geometry, material);
-            debugGroup.add(lineObject);
-        });
+function updateDebugVisualization(data) {
+    // Update lines
+    const linePositions = [];
+    const lineColors = [];
+    data.lines.forEach(line => {
+        linePositions.push(line.start.x, line.start.y, line.start.z);
+        linePositions.push(line.end.x, line.end.y, line.end.z);
+        lineColors.push(line.color.x, line.color.y, line.color.z);
+        lineColors.push(line.color.x, line.color.y, line.color.z);
+    });
 
-        // Draw points
-        debugData.points.forEach(point => {
-            const geometry = new THREE.SphereGeometry(point.size, 8, 8);
-            const material = new THREE.MeshBasicMaterial({ color: new THREE.Color(point.color.x, point.color.y, point.color.z) });
-            const sphere = new THREE.Mesh(geometry, material);
-            sphere.position.set(point.position.x, point.position.y, point.position.z);
-            debugGroup.add(sphere);
-        });
-    } catch (error) {
-        log('Error updating debug visualization:', error);
-    }
+    const lineGeometry = debugLines.geometry;
+    lineGeometry.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+    lineGeometry.setAttribute('color', new THREE.Float32BufferAttribute(lineColors, 3));
+    lineGeometry.attributes.position.needsUpdate = true;
+    lineGeometry.attributes.color.needsUpdate = true;
+
+    // Update points
+    const pointPositions = [];
+    const pointColors = [];
+    data.points.forEach(point => {
+        pointPositions.push(point.position.x, point.position.y, point.position.z);
+        pointColors.push(point.color.x, point.color.y, point.color.z);
+    });
+
+    const pointGeometry = debugPoints.geometry;
+    pointGeometry.setAttribute('position', new THREE.Float32BufferAttribute(pointPositions, 3));
+    pointGeometry.setAttribute('color', new THREE.Float32BufferAttribute(pointColors, 3));
+    pointGeometry.attributes.position.needsUpdate = true;
+    pointGeometry.attributes.color.needsUpdate = true;
 }
 
 // Animation loop
 function animate() {
-    try {
-        requestAnimationFrame(animate);
-        renderer.render(scene, camera);
-    } catch (error) {
-        log('Error in animation loop:', error);
-    }
+    requestAnimationFrame(animate);
+    controls.update();
+    renderer.render(scene, camera);
 }
 
-log('Starting animation loop...');
+// Start animation
 animate();
-log('Renderer initialization complete');
+
+// UI Controls
+document.getElementById('toggleDebug').addEventListener('click', () => {
+    window.electronAPI.toggleDebug();
+});
+
+document.getElementById('toggleColliders').addEventListener('click', () => {
+    window.electronAPI.toggleColliders();
+});
+
+document.getElementById('toggleGrid').addEventListener('click', () => {
+    window.electronAPI.toggleGrid();
+});
+
+document.getElementById('resetScene').addEventListener('click', () => {
+    window.electronAPI.resetScene();
+});
+
+document.getElementById('addBox').addEventListener('click', () => {
+    window.electronAPI.addBox();
+});
+
+document.getElementById('addSphere').addEventListener('click', () => {
+    window.electronAPI.addSphere();
+});
+
+// Example of using the exposed electronAPI
+window.electronAPI.sendMessage('Hello from renderer!');
+
+// Listen for messages from main process
+window.electronAPI.onMessage((event, message) => {
+    console.log('Received from main process:', message);
+});
+
+// Clean up listener when needed
+// window.electronAPI.removeMessageListener(callback);
+
+log('Renderer initialized');
