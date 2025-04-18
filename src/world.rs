@@ -82,6 +82,54 @@ impl PhysicsWorld {
                             resolve_aabb_collision(body_a, body_b, normal, penetration, restitution, friction);
                         }
                     }
+                    (CollisionShape::Sphere, CollisionShape::AABB) | (CollisionShape::AABB, CollisionShape::Sphere) => {
+                        // Sphere vs. AABB collision
+                        let is_a_sphere = body_a.shape == CollisionShape::Sphere;
+                        
+                        // Simple sphere vs AABB collision
+                        let aabb_bounds = if is_a_sphere {
+                            AABB::from_rigid_body(body_b)
+                        } else {
+                            AABB::from_rigid_body(body_a)
+                        };
+                        
+                        let sphere_pos = if is_a_sphere {
+                            body_a.position
+                        } else {
+                            body_b.position
+                        };
+                        
+                        let sphere_radius = if is_a_sphere {
+                            body_a.radius
+                        } else {
+                            body_b.radius
+                        };
+                        
+                        let closest_point = Vector3::new(
+                            sphere_pos.x.clamp(aabb_bounds.min.x, aabb_bounds.max.x),
+                            sphere_pos.y.clamp(aabb_bounds.min.y, aabb_bounds.max.y),
+                            sphere_pos.z.clamp(aabb_bounds.min.z, aabb_bounds.max.z)
+                        );
+                        
+                        let diff = sphere_pos - closest_point;
+                        let dist_sq = diff.dot(&diff);
+                        
+                        if dist_sq < sphere_radius * sphere_radius {
+                            let dist = dist_sq.sqrt();
+                            let normal = if dist < 1e-6 {
+                                Vector3::new(0.0, 1.0, 0.0) // Default to up if centers overlap
+                            } else {
+                                diff * (1.0 / dist)
+                            };
+                            let penetration = sphere_radius - dist;
+                            
+                            if is_a_sphere {
+                                resolve_sphere_collision(body_a, body_b, normal, penetration, restitution, friction);
+                            } else {
+                                resolve_sphere_collision(body_b, body_a, normal * -1.0, penetration, restitution, friction);
+                            }
+                        }
+                    }
                     (CollisionShape::OBB, CollisionShape::OBB) => {
                         // OBB vs. OBB collision
                         let obb_a = OBB::from_rigid_body(body_a);
