@@ -1,4 +1,4 @@
-use crate::math_utils::{Vector3, Matrix3, Quaternion};
+use crate::math_utils::Vector3;
 use crate::aabb::RigidBody;
 use std::f32::consts::PI;
 
@@ -11,7 +11,7 @@ pub trait Constraint {
     fn solve(&mut self, dt: f32);
     
     /// Clean up after constraint solving
-    fn post_solve(&mut self);
+    fn post_solve(&mut self, _dt: f32);
 }
 
 /// Point-to-point constraint (ball joint)
@@ -38,7 +38,7 @@ impl PointToPointConstraint {
 }
 
 impl Constraint for PointToPointConstraint {
-    fn pre_solve(&mut self, dt: f32) {
+    fn pre_solve(&mut self, _dt: f32) {
         unsafe {
             // Convert local pivot points to world space
             let rot_a = (*self.body_a).rotation.to_matrix();
@@ -76,12 +76,13 @@ impl Constraint for PointToPointConstraint {
         }
     }
 
-    fn post_solve(&mut self) {
+    fn post_solve(&mut self, _dt: f32) {
         // Nothing to do here
     }
 }
 
 /// Hinge constraint (revolute joint)
+#[allow(dead_code)]
 pub struct HingeConstraint {
     body_a: *mut RigidBody,
     body_b: *mut RigidBody,
@@ -156,7 +157,7 @@ impl HingeConstraint {
 }
 
 impl Constraint for HingeConstraint {
-    fn pre_solve(&mut self, dt: f32) {
+    fn pre_solve(&mut self, _dt: f32) {
         unsafe {
             // Convert local pivot points and axes to world space
             let rot_a = (*self.body_a).rotation.to_matrix();
@@ -208,7 +209,7 @@ impl Constraint for HingeConstraint {
         }
     }
 
-    fn post_solve(&mut self) {
+    fn post_solve(&mut self, _dt: f32) {
         // Nothing to do here
     }
 }
@@ -252,7 +253,7 @@ impl SliderConstraint {
 }
 
 impl Constraint for SliderConstraint {
-    fn pre_solve(&mut self, dt: f32) {
+    fn pre_solve(&mut self, _dt: f32) {
         unsafe {
             // Convert local pivot points and axes to world space
             let rot_a = (*self.body_a).rotation.to_matrix();
@@ -320,7 +321,7 @@ impl Constraint for SliderConstraint {
         }
     }
 
-    fn post_solve(&mut self) {
+    fn post_solve(&mut self, _dt: f32) {
         // Nothing to do here
     }
 }
@@ -357,7 +358,7 @@ impl DistanceConstraint {
 }
 
 impl Constraint for DistanceConstraint {
-    fn pre_solve(&mut self, dt: f32) {
+    fn pre_solve(&mut self, _dt: f32) {
         unsafe {
             // Convert local pivot points to world space
             let rot_a = (*self.body_a).rotation.to_matrix();
@@ -399,7 +400,7 @@ impl Constraint for DistanceConstraint {
         }
     }
 
-    fn post_solve(&mut self) {
+    fn post_solve(&mut self, _dt: f32) {
         // Nothing to do here
     }
 }
@@ -461,7 +462,7 @@ impl ConeTwistConstraint {
 }
 
 impl Constraint for ConeTwistConstraint {
-    fn pre_solve(&mut self, dt: f32) {
+    fn pre_solve(&mut self, _dt: f32) {
         unsafe {
             // Convert local pivot points and axes to world space
             let rot_a = (*self.body_a).rotation.to_matrix();
@@ -542,7 +543,7 @@ impl Constraint for ConeTwistConstraint {
         }
     }
 
-    fn post_solve(&mut self) {
+    fn post_solve(&mut self, _dt: f32) {
         // Nothing to do here
     }
 } 

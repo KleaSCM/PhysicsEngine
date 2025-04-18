@@ -47,7 +47,7 @@ impl PhysicsWorld {
         for constraint in &mut self.constraints {
             constraint.pre_solve(self.fixed_delta_time);
             constraint.solve(self.fixed_delta_time);
-            constraint.post_solve();
+            constraint.post_solve(self.fixed_delta_time);
         }
 
         // 4) Detect and resolve collisions

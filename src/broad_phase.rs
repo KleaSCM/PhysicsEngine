@@ -56,6 +56,7 @@ impl UniformGridBroadPhase {
     }
 
     /// Gets the neighboring grid coordinates (including the cell itself)
+    #[allow(dead_code)]
     fn get_neighbor_coords(&self, coord: &GridCoord) -> Vec<GridCoord> {
         let mut neighbors = Vec::with_capacity(27); // 3^3 = 27 neighbors in 3D
         for dx in -1..=1 {
