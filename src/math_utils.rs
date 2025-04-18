@@ -134,11 +134,25 @@ pub struct Matrix3 {
     pub m: [[f32; 3]; 3],
 }
 
+impl PartialEq for Matrix3 {
+    fn eq(&self, other: &Self) -> bool {
+        self.m == other.m
+    }
+}
+
 impl Matrix3 {
     pub fn new() -> Self {
         Self {
             m: [[0.0; 3]; 3],
         }
+    }
+
+    pub fn identity() -> Self {
+        let mut m = Self::new();
+        m.m[0][0] = 1.0;
+        m.m[1][1] = 1.0;
+        m.m[2][2] = 1.0;
+        m
     }
 
     pub fn from_diagonal(diag: f32) -> Self {
