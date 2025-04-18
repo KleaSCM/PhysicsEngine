@@ -79,20 +79,32 @@ fn main() {
 
         // Print positions and visualize
         let bodies = world.bodies();
-        print!("\x1B[1;1H"); // Move cursor to top
+        print!("\x1B[2J\x1B[1;1H"); // Clear screen and move to top
         println!("Time: {:.2}s", elapsed_time);
         println!("Box1 position: {:?}", bodies[1].position);
         println!("Sphere position: {:?}", bodies[2].position);
         println!("Pendulum position: {:?}", bodies[4].position);
         
-        // ASCII visualization of pendulum
+        // ASCII visualization of pendulum with proper vertical positioning
+        let y = bodies[4].position.y;
         let x = bodies[4].position.x;
-        let horizontal_space = " ".repeat(((x + 5.0) * 3.0).clamp(0.0, 30.0) as usize);
+        let x_col = ((x + 5.0) * 3.0).clamp(0.0, 30.0) as usize;
+        let y_row = ((10.0 - y) * 2.0).clamp(0.0, 20.0) as usize;
+        
         println!("\nPendulum visualization:");
-        println!("{}🔲", horizontal_space); // Anchor point
-        println!("{}│", horizontal_space);  // Connection line
-        println!("{}🟥", horizontal_space); // Pendulum bob
-        println!("\n----------------------------------------");
+        // Draw anchor point
+        println!("\x1B[{};{}H🔲", 10, x_col);
+        // Draw pendulum bob
+        println!("\x1B[{};{}H🟥", y_row, x_col);
+        
+        // Draw velocity information
+        let velocity = bodies[4].velocity;
+        let speed = velocity.length();
+        let bar = "▮".repeat((speed * 5.0).clamp(0.0, 40.0) as usize);
+        println!("\x1B[22;1H----------------------------------------");
+        println!("Velocity: {:.2} m/s", speed);
+        println!("Speed Graph: [{}]", bar);
+        println!("----------------------------------------");
 
         // Sleep to approximate real-time
         thread::sleep(time::Duration::from_secs_f32(fixed_timestep));
