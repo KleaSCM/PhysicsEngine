@@ -8,12 +8,31 @@ pub struct AABB {
     pub max: Vector3,
 }
 
+impl AABB {
+    pub fn from_rigid_body(body: &RigidBody) -> Self {
+        Self {
+            min: body.position - body.half_extents,
+            max: body.position + body.half_extents,
+        }
+    }
+}
+
 /// Represents an Oriented Bounding Box
 #[derive(Debug, Clone, Copy)]
 pub struct OBB {
     pub position: Vector3,
     pub half_extents: Vector3,
     pub rotation: Matrix3,
+}
+
+impl OBB {
+    pub fn from_rigid_body(body: &RigidBody) -> Self {
+        Self {
+            position: body.position,
+            half_extents: body.half_extents,
+            rotation: body.rotation.to_matrix(),
+        }
+    }
 }
 
 /// Collision detection and resolution functions
@@ -426,4 +445,54 @@ pub fn compute_obb_aabb_collision(obb: &OBB, aabb: &AABB) -> Option<(f32, Vector
     }
 
     Some((min_overlap, obb.rotation * min_normal))
+}
+
+pub fn compute_sphere_collision(a: &RigidBody, b: &RigidBody) -> Option<(f32, Vector3)> {
+    let diff = b.position - a.position;
+    let dist_sq = diff.dot(&diff);
+    let min_dist = a.radius + b.radius;
+    let min_dist_sq = min_dist * min_dist;
+
+    if dist_sq < min_dist_sq {
+        let dist = dist_sq.sqrt();
+        let normal = diff * (1.0 / dist);
+        Some((min_dist - dist, normal))
+    } else {
+        None
+    }
+}
+
+pub fn resolve_sphere_collision(
+    a: &mut RigidBody,
+    b: &mut RigidBody,
+    normal: Vector3,
+    penetration: f32,
+    restitution: f32,
+    friction_coeff: f32,
+) {
+    // Calculate relative velocity
+    let relative_vel = b.velocity - a.velocity;
+    let normal_vel = relative_vel.dot(&normal);
+
+    // Don't resolve if objects are moving apart
+    if normal_vel > 0.0 {
+        return;
+    }
+
+    // Calculate impulse
+    let j = -(1.0 + restitution) * normal_vel;
+    let j = j / (a.inv_mass + b.inv_mass);
+    let j = j / (1.0 + friction_coeff);
+
+    // Apply impulse
+    let impulse = normal * j;
+    a.velocity = a.velocity - (impulse * a.inv_mass);
+    b.velocity = b.velocity + (impulse * b.inv_mass);
+
+    // Move objects apart
+    let percent = 0.2; // Penetration slop
+    let slop = 0.01;   // Penetration allowance
+    let correction = normal * ((penetration - slop).max(0.0) * percent / (a.inv_mass + b.inv_mass));
+    a.position = a.position - (correction * a.inv_mass);
+    b.position = b.position + (correction * b.inv_mass);
 } 

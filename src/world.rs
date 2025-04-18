@@ -1,8 +1,8 @@
 use crate::math_utils::Vector3;
-use crate::aabb::RigidBody;
+use crate::aabb::{RigidBody, CollisionShape};
 use crate::constraints::Constraint;
-use crate::collision::{CollisionShape, compute_aabb_collision, compute_obb_collision, compute_obb_aabb_collision};
-use crate::collision::{resolve_aabb_collision, resolve_obb_collision, resolve_obb_aabb_collision};
+use crate::collision::{AABB, OBB, compute_aabb_collision, compute_obb_collision, compute_obb_aabb_collision, compute_sphere_collision, resolve_sphere_collision};
+use crate::collision::collision::{resolve_aabb_collision, resolve_obb_collision, resolve_obb_aabb_collision};
 use std::vec::Vec;
 
 /// Manages a collection of RigidBody objects and performs physics simulation
