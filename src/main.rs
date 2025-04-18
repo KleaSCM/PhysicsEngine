@@ -5,8 +5,15 @@ use physics_engine::{
     constraints::PointToPointConstraint,
 };
 use std::{thread, time};
+use std::fs::File;
+use std::io::Write;
+use std::fmt::Write as FmtWrite;
 
 fn main() {
+    // Create a string to store simulation frames
+    let mut output = String::new();
+    writeln!(&mut output, "[").unwrap();
+
     // Create a physics world
     let mut world = PhysicsWorld::new();
 
@@ -77,29 +84,34 @@ fn main() {
         // Step the physics simulation
         world.step();
 
-        // Print positions and visualize
+        // Record frame data
         let bodies = world.bodies();
+        let pendulum = &bodies[4];
+        writeln!(&mut output, "  {{ \"time\": {:.3}, \"x\": {:.3}, \"y\": {:.3}, \"velocity\": {:.3} }},",
+            elapsed_time,
+            pendulum.position.x,
+            pendulum.position.y,
+            pendulum.velocity.length()
+        ).unwrap();
+
+        // Visualization code remains the same
         print!("\x1B[2J\x1B[1;1H"); // Clear screen and move to top
         println!("Time: {:.2}s", elapsed_time);
         println!("Box1 position: {:?}", bodies[1].position);
         println!("Sphere position: {:?}", bodies[2].position);
-        println!("Pendulum position: {:?}", bodies[4].position);
+        println!("Pendulum position: {:?}", pendulum.position);
         
         // ASCII visualization of pendulum with proper vertical positioning
-        let y = bodies[4].position.y;
-        let x = bodies[4].position.x;
+        let y = pendulum.position.y;
+        let x = pendulum.position.x;
         let x_col = ((x + 5.0) * 3.0).clamp(0.0, 30.0) as usize;
         let y_row = ((10.0 - y) * 2.0).clamp(0.0, 20.0) as usize;
         
         println!("\nPendulum visualization:");
-        // Draw anchor point
         println!("\x1B[{};{}H🔲", 10, x_col);
-        // Draw pendulum bob
         println!("\x1B[{};{}H🟥", y_row, x_col);
         
-        // Draw velocity information
-        let velocity = bodies[4].velocity;
-        let speed = velocity.length();
+        let speed = pendulum.velocity.length();
         let bar = "▮".repeat((speed * 5.0).clamp(0.0, 40.0) as usize);
         println!("\x1B[22;1H----------------------------------------");
         println!("Velocity: {:.2} m/s", speed);
@@ -110,4 +122,10 @@ fn main() {
         thread::sleep(time::Duration::from_secs_f32(fixed_timestep));
         elapsed_time += fixed_timestep;
     }
+
+    // Close the JSON array and save to file
+    writeln!(&mut output, "]").unwrap();
+    let mut file = File::create("simulation.json").unwrap();
+    file.write_all(output.as_bytes()).unwrap();
+    println!("\nSimulation data saved to simulation.json");
 }
