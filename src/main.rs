@@ -1,8 +1,7 @@
 use physics_engine::{
     aabb::{RigidBody, CollisionShape},
     world::PhysicsWorld,
-    math_utils::Vector3,
-    constraints::PointToPointConstraint,
+    math_utils::{Vector3, Quaternion},
 };
 use std::{thread, time};
 use std::fs::File;
@@ -10,120 +9,116 @@ use std::io::Write;
 use std::fmt::Write as FmtWrite;
 
 fn main() {
-    // Create a string to store simulation frames
-    let mut output = String::new();
-    writeln!(&mut output, "[").unwrap();
-
     // Create a physics world
     let mut world = PhysicsWorld::new();
 
-    // Create a static ground plane (heavy box)
-    let mut ground = RigidBody::new();
-    ground.set_mass(0.0); // Static body
-    ground.shape = CollisionShape::AABB;
-    ground.set_half_extents(Vector3::new(10.0, 0.5, 10.0));
-    ground.position = Vector3::new(0.0, -0.5, 0.0);
-    world.add_body(ground);
+    // Create a bouncing ball (sphere)
+    let mut ball = RigidBody::new();
+    ball.set_mass(1.0);
+    ball.shape = CollisionShape::Sphere;
+    ball.set_radius(0.5);
+    ball.position = Vector3::new(0.0, 0.0, 0.0);
+    ball.velocity = Vector3::new(3.0, 5.0, 2.0); // Initial velocity for interesting motion
+    ball.restitution = 0.8; // Make it bouncy
+    world.add_body(ball);
 
-    // Create a dynamic box
-    let mut box1 = RigidBody::new();
-    box1.set_mass(1.0);
-    box1.shape = CollisionShape::AABB;
-    box1.set_half_extents(Vector3::new(0.5, 0.5, 0.5));
-    box1.position = Vector3::new(0.0, 5.0, 0.0);
-    world.add_body(box1);
+    // Create cube walls using OBBs
+    // Bottom wall
+    let mut bottom = RigidBody::new();
+    bottom.set_mass(0.0); // Static
+    bottom.shape = CollisionShape::OBB;
+    bottom.set_half_extents(Vector3::new(5.0, 0.2, 5.0));
+    bottom.position = Vector3::new(0.0, -5.0, 0.0);
+    world.add_body(bottom);
 
-    // Create a sphere
-    let mut sphere = RigidBody::new();
-    sphere.set_mass(1.0);
-    sphere.shape = CollisionShape::Sphere;
-    sphere.set_radius(0.5);
-    sphere.position = Vector3::new(2.0, 7.0, 0.0);
-    world.add_body(sphere);
+    // Top wall
+    let mut top = RigidBody::new();
+    top.set_mass(0.0);
+    top.shape = CollisionShape::OBB;
+    top.set_half_extents(Vector3::new(5.0, 0.2, 5.0));
+    top.position = Vector3::new(0.0, 5.0, 0.0);
+    world.add_body(top);
 
-    // Create two boxes connected by a point-to-point constraint (like a pendulum)
-    let mut box2 = RigidBody::new();
-    box2.set_mass(0.0); // Static anchor
-    box2.shape = CollisionShape::AABB;
-    box2.set_half_extents(Vector3::new(0.2, 0.2, 0.2));
-    box2.position = Vector3::new(-2.0, 8.0, 0.0);
-    
-    let mut box3 = RigidBody::new();
-    box3.set_mass(1.0);
-    box3.shape = CollisionShape::AABB;
-    box3.set_half_extents(Vector3::new(0.3, 0.3, 0.3));
-    box3.position = Vector3::new(-2.0, 6.0, 0.0);
+    // Left wall
+    let mut left = RigidBody::new();
+    left.set_mass(0.0);
+    left.shape = CollisionShape::OBB;
+    left.set_half_extents(Vector3::new(0.2, 5.0, 5.0));
+    left.position = Vector3::new(-5.0, 0.0, 0.0);
+    world.add_body(left);
 
-    // Add the bodies first
-    world.add_body(box2);
-    world.add_body(box3);
+    // Right wall
+    let mut right = RigidBody::new();
+    right.set_mass(0.0);
+    right.shape = CollisionShape::OBB;
+    right.set_half_extents(Vector3::new(0.2, 5.0, 5.0));
+    right.position = Vector3::new(5.0, 0.0, 0.0);
+    world.add_body(right);
 
-    // Get references to the bodies for the constraint (cleaner pointer handling)
-    let bodies = world.bodies_mut();
-    let box2_ptr = &mut bodies[3] as *mut Box<RigidBody>;
-    let box3_ptr = &mut bodies[4] as *mut Box<RigidBody>;
+    // Front wall
+    let mut front = RigidBody::new();
+    front.set_mass(0.0);
+    front.shape = CollisionShape::OBB;
+    front.set_half_extents(Vector3::new(5.0, 5.0, 0.2));
+    front.position = Vector3::new(0.0, 0.0, 5.0);
+    world.add_body(front);
 
-    // Create and add the point-to-point constraint
-    let constraint = Box::new(PointToPointConstraint::new(
-        box2_ptr as *mut RigidBody,
-        box3_ptr as *mut RigidBody,
-        Vector3::zero(),
-        Vector3::new(0.0, 0.3, 0.0),
-    ));
-    world.add_constraint(constraint);
+    // Back wall
+    let mut back = RigidBody::new();
+    back.set_mass(0.0);
+    back.shape = CollisionShape::OBB;
+    back.set_half_extents(Vector3::new(5.0, 5.0, 0.2));
+    back.position = Vector3::new(0.0, 0.0, -5.0);
+    world.add_body(back);
 
     // Simulation loop
     let fixed_timestep = 1.0 / 60.0;
     let mut elapsed_time = 0.0;
-    let simulation_duration = 10.0; // Run for 10 seconds
+    let simulation_duration = 10.0;
+    let rotation_speed = 0.5; // Radians per second
 
-    // Clear terminal and hide cursor for better visualization
-    print!("\x1B[2J\x1B[1;1H");
+    // Create a string to store simulation frames
+    let mut output = String::new();
+    writeln!(&mut output, "[").unwrap();
 
     while elapsed_time < simulation_duration {
+        // Rotate the cube walls
+        let angle = elapsed_time * rotation_speed;
+        let rotation = Quaternion::from_axis_angle(Vector3::new(1.0, 1.0, 0.0).normalize(), angle);
+        
+        // Update wall rotations
+        for i in 1..7 { // Skip the ball (index 0)
+            let wall = &mut world.bodies_mut()[i];
+            wall.rotation = rotation;
+        }
+
         // Step the physics simulation
         world.step();
 
         // Record frame data
         let bodies = world.bodies();
-        let pendulum = &bodies[4];
-        writeln!(&mut output, "  {{ \"time\": {:.3}, \"x\": {:.3}, \"y\": {:.3}, \"velocity\": {:.3} }},",
+        let ball = &bodies[0];
+        writeln!(&mut output, "  {{ \"time\": {:.3}, \"position\": [{:.3}, {:.3}, {:.3}], \"velocity\": {:.3}, \"cube_angle\": {:.3} }},",
             elapsed_time,
-            pendulum.position.x,
-            pendulum.position.y,
-            pendulum.velocity.length()
+            ball.position.x,
+            ball.position.y,
+            ball.position.z,
+            ball.velocity.length(),
+            angle
         ).unwrap();
 
-        // Visualization code remains the same
-        print!("\x1B[2J\x1B[1;1H"); // Clear screen and move to top
+        // Print current state
         println!("Time: {:.2}s", elapsed_time);
-        println!("Box1 position: {:?}", bodies[1].position);
-        println!("Sphere position: {:?}", bodies[2].position);
-        println!("Pendulum position: {:?}", pendulum.position);
-        
-        // ASCII visualization of pendulum with proper vertical positioning
-        let y = pendulum.position.y;
-        let x = pendulum.position.x;
-        let x_col = ((x + 5.0) * 3.0).clamp(0.0, 30.0) as usize;
-        let y_row = ((10.0 - y) * 2.0).clamp(0.0, 20.0) as usize;
-        
-        println!("\nPendulum visualization:");
-        println!("\x1B[{};{}H🔲", 10, x_col);
-        println!("\x1B[{};{}H🟥", y_row, x_col);
-        
-        let speed = pendulum.velocity.length();
-        let bar = "▮".repeat((speed * 5.0).clamp(0.0, 40.0) as usize);
-        println!("\x1B[22;1H----------------------------------------");
-        println!("Velocity: {:.2} m/s", speed);
-        println!("Speed Graph: [{}]", bar);
+        println!("Ball position: {:?}", ball.position);
+        println!("Ball velocity: {:.2} m/s", ball.velocity.length());
+        println!("Cube rotation: {:.2} rad", angle);
         println!("----------------------------------------");
 
-        // Sleep to approximate real-time
         thread::sleep(time::Duration::from_secs_f32(fixed_timestep));
         elapsed_time += fixed_timestep;
     }
 
-    // Close the JSON array and save to file
+    // Save simulation data
     writeln!(&mut output, "]").unwrap();
     let mut file = File::create("simulation.json").unwrap();
     file.write_all(output.as_bytes()).unwrap();

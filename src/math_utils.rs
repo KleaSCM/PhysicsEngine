@@ -295,6 +295,19 @@ impl Quaternion {
             Vector3::new(2.0 * (xz - wy), 2.0 * (yz + wx), 1.0 - 2.0 * (x2 + y2)),
         )
     }
+
+    pub fn from_axis_angle(axis: Vector3, angle: f32) -> Self {
+        let half_angle = angle * 0.5;
+        let sin_half = half_angle.sin();
+        let normalized_axis = axis.normalize();
+        
+        Self {
+            w: half_angle.cos(),
+            x: normalized_axis.x * sin_half,
+            y: normalized_axis.y * sin_half,
+            z: normalized_axis.z * sin_half,
+        }
+    }
 }
 
 impl Mul for Quaternion {

@@ -1,0 +1,12 @@
+/home/klea/Documents/Dev/PhysicsEngine/target/debug/deps/libbevy_math-1bd4eb10b15811f2.rmeta: /home/klea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_math-0.12.1/src/lib.rs /home/klea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_math-0.12.1/src/affine3.rs /home/klea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_math-0.12.1/src/cubic_splines.rs /home/klea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_math-0.12.1/src/ray.rs /home/klea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_math-0.12.1/src/rects/mod.rs /home/klea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_math-0.12.1/src/rects/irect.rs /home/klea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_math-0.12.1/src/rects/rect.rs /home/klea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_math-0.12.1/src/rects/urect.rs
+
+/home/klea/Documents/Dev/PhysicsEngine/target/debug/deps/bevy_math-1bd4eb10b15811f2.d: /home/klea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_math-0.12.1/src/lib.rs /home/klea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_math-0.12.1/src/affine3.rs /home/klea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_math-0.12.1/src/cubic_splines.rs /home/klea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_math-0.12.1/src/ray.rs /home/klea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_math-0.12.1/src/rects/mod.rs /home/klea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_math-0.12.1/src/rects/irect.rs /home/klea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_math-0.12.1/src/rects/rect.rs /home/klea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_math-0.12.1/src/rects/urect.rs
+
+/home/klea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_math-0.12.1/src/lib.rs:
+/home/klea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_math-0.12.1/src/affine3.rs:
+/home/klea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_math-0.12.1/src/cubic_splines.rs:
+/home/klea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_math-0.12.1/src/ray.rs:
+/home/klea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_math-0.12.1/src/rects/mod.rs:
+/home/klea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_math-0.12.1/src/rects/irect.rs:
+/home/klea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_math-0.12.1/src/rects/rect.rs:
+/home/klea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_math-0.12.1/src/rects/urect.rs:
